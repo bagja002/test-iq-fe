@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 180" role="img" aria-labelledby="title desc">
+  <title id="title">Figure weights prompt</title>
+  <desc id="desc">Timbangan seimbang dengan satu persegi di kiri dan dua lingkaran di kanan.</desc>
+  <rect width="280" height="180" rx="24" fill="#f8fafc"/>
+  <rect x="132" y="34" width="16" height="86" rx="8" fill="#334155"/>
+  <rect x="110" y="118" width="60" height="10" rx="5" fill="#334155"/>
+  <line x1="56" y1="60" x2="224" y2="60" stroke="#334155" stroke-width="8" stroke-linecap="round"/>
+  <line x1="84" y1="60" x2="68" y2="110" stroke="#334155" stroke-width="4"/>
+  <line x1="196" y1="60" x2="212" y2="110" stroke="#334155" stroke-width="4"/>
+  <rect x="50" y="110" width="36" height="18" rx="9" fill="#1e293b"/>
+  <rect x="194" y="110" width="36" height="18" rx="9" fill="#1e293b"/>
+  <rect x="58" y="78" width="20" height="20" rx="4" fill="#f97316"/>
+  <circle cx="205" cy="88" r="10" fill="#0ea5e9"/>
+  <circle cx="225" cy="88" r="10" fill="#0ea5e9"/>
+</svg>

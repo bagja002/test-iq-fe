@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 380 200" role="img" aria-labelledby="title desc">
+  <title id="title">Coding prompt</title>
+  <desc id="desc">Legenda simbol ke angka dan deret simbol yang harus diterjemahkan.</desc>
+  <rect width="380" height="200" rx="24" fill="#f8fafc"/>
+  <rect x="26" y="30" width="328" height="68" rx="18" fill="#ffffff" stroke="#cbd5e1" stroke-width="3"/>
+  <polygon points="56,80 42,56 70,56" fill="#f97316"/>
+  <text x="84" y="74" font-family="Arial, sans-serif" font-size="24" fill="#334155">= 1</text>
+  <circle cx="150" cy="68" r="14" fill="#0ea5e9"/>
+  <text x="176" y="74" font-family="Arial, sans-serif" font-size="24" fill="#334155">= 2</text>
+  <rect x="236" y="54" width="28" height="28" rx="6" fill="#14b8a6"/>
+  <text x="276" y="74" font-family="Arial, sans-serif" font-size="24" fill="#334155">= 3</text>
+  <polygon points="324,50 330,64 346,64 334,74 338,90 324,80 310,90 314,74 302,64 318,64" fill="#a855f7"/>
+  <text x="26" y="138" font-family="Arial, sans-serif" font-size="18" fill="#334155">Terjemahkan deret:</text>
+  <circle cx="154" cy="130" r="14" fill="#0ea5e9"/>
+  <rect x="190" y="116" width="28" height="28" rx="6" fill="#14b8a6"/>
+  <polygon points="268,142 254,118 282,118" fill="#f97316"/>
+</svg>

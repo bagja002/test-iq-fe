@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 180" role="img" aria-labelledby="title desc">
+  <title id="title">Symbol search prompt</title>
+  <desc id="desc">Target simbol persen dan at, lalu deret simbol pencarian.</desc>
+  <rect width="360" height="180" rx="24" fill="#f8fafc"/>
+  <text x="40" y="42" font-family="Arial, sans-serif" font-size="18" fill="#334155">Target</text>
+  <rect x="28" y="54" width="132" height="52" rx="16" fill="#ffffff" stroke="#cbd5e1" stroke-width="3"/>
+  <text x="62" y="88" font-family="Arial, sans-serif" font-size="32" fill="#f97316">%</text>
+  <text x="108" y="88" font-family="Arial, sans-serif" font-size="32" fill="#0ea5e9">@</text>
+  <text x="196" y="42" font-family="Arial, sans-serif" font-size="18" fill="#334155">Deret</text>
+  <rect x="184" y="54" width="148" height="84" rx="18" fill="#ffffff" stroke="#cbd5e1" stroke-width="3"/>
+  <text x="206" y="89" font-family="Arial, sans-serif" font-size="28" fill="#475569">#</text>
+  <text x="234" y="89" font-family="Arial, sans-serif" font-size="28" fill="#0ea5e9">@</text>
+  <text x="262" y="89" font-family="Arial, sans-serif" font-size="28" fill="#475569">!</text>
+  <text x="290" y="89" font-family="Arial, sans-serif" font-size="28" fill="#f97316">%</text>
+  <text x="314" y="89" font-family="Arial, sans-serif" font-size="28" fill="#475569">$</text>
+</svg>

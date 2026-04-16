@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 180" role="img" aria-labelledby="title desc">
+  <title id="title">Picture completion prompt</title>
+  <desc id="desc">Jam analog tanpa jarum penunjuk waktu.</desc>
+  <rect width="240" height="180" rx="24" fill="#f8fafc"/>
+  <circle cx="120" cy="90" r="58" fill="#ffffff" stroke="#334155" stroke-width="8"/>
+  <circle cx="120" cy="90" r="6" fill="#334155"/>
+  <g stroke="#64748b" stroke-width="4" stroke-linecap="round">
+    <line x1="120" y1="38" x2="120" y2="50"/>
+    <line x1="120" y1="130" x2="120" y2="142"/>
+    <line x1="68" y1="90" x2="80" y2="90"/>
+    <line x1="160" y1="90" x2="172" y2="90"/>
+  </g>
+</svg>

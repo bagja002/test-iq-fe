@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 180" role="img" aria-labelledby="title desc">
+  <title id="title">Visual puzzles prompt</title>
+  <desc id="desc">Target berupa bentuk rumah sederhana.</desc>
+  <rect width="260" height="180" rx="24" fill="#f8fafc"/>
+  <rect x="60" y="74" width="140" height="72" rx="14" fill="#0ea5e9"/>
+  <polygon points="130,28 46,82 214,82" fill="#f97316"/>
+  <rect x="114" y="102" width="32" height="44" rx="8" fill="#f8fafc"/>
+</svg>
