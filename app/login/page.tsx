@@ -1,8 +1,15 @@
+import type { Metadata } from "next"
 import { redirect } from "next/navigation"
 
 import { LoginForm } from "@/components/login-form"
 import { ProOfferPanel } from "@/components/pro-offer-panel"
 import { getSession } from "@/lib/session"
+
+export const metadata: Metadata = {
+  title: "Login Try Out KDMP KNMP",
+  description:
+    "Login ke platform TO dan Try Out KDMP KNMP untuk latihan Koperasi Desa Merah Putih, Koperasi Nelayan Merah Putih, test kognitif, dan SKB jabatan koperasi.",
+}
 
 export default async function LoginPage() {
   const session = await getSession()
