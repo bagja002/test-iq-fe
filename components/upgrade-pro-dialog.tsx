@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 
+import type { AccountType } from "@iq/openapi"
+
 import { Button } from "@/components/ui/button"
 import { Dialog } from "@/components/ui/dialog"
 import { browserApiUrl } from "@/lib/browser-api"
@@ -14,29 +16,50 @@ interface UpgradeProDialogProps {
   className?: string
 }
 
-const proBenefits = [
+interface UpgradePlanCard {
+  code: Extract<AccountType, "PRO" | "MAX">
+  badge: string
+  price: string
+  headline: string
+  description: string
+  points: string[]
+}
+
+const upgradePlans: UpgradePlanCard[] = [
   {
-    title: "Siap tempur untuk KDMP dan KNMP",
-    description: "Dirancang untuk peserta yang ingin memaksimalkan peluang lolos seleksi KDMP dan KNMP dengan latihan yang jauh lebih lengkap.",
+    code: "PRO",
+    badge: "Paket Pro",
+    price: "Rp40.000",
+    headline: "Semua fitur terbuka dengan batas latihan harian",
+    description: "Cocok untuk peserta yang ingin akses penuh IQ dan SKB, tetapi tetap dengan kontrol pemakaian harian.",
+    points: [
+      "Akses penuh Test IQ 120 soal per sesi",
+      "Akses semua jabatan SKB 30 soal per sesi",
+      "Maksimal 10 submit IQ per hari",
+      "Maksimal 10 submit SKB per hari",
+      "Maksimal 3 browser/perangkat per akun",
+    ],
   },
   {
-    title: "20 paket test kognitif",
-    description: "Akses 20 paket latihan kognitif dengan total sekitar 2.500 soal untuk membangun kecepatan, akurasi, dan daya analisis.",
-  },
-  {
-    title: "20 paket SKB tervalid",
-    description: "Dapatkan 20 paket SKB dengan total sekitar 2.000 soal seputar jabatan, disusun untuk latihan yang lebih relevan dan tervalid.",
-  },
-  {
-    title: "Akses semua jabatan dan hasil penuh",
-    description: "Buka seluruh room SKB, latihan tanpa batas preview, dan lihat hasil lengkap untuk evaluasi belajar yang lebih serius.",
+    code: "MAX",
+    badge: "Paket Max",
+    price: "Rp50.000",
+    headline: "Full akses tanpa batas submit harian",
+    description: "Cocok untuk peserta yang ingin belajar intens tanpa dibatasi jumlah submit IQ atau SKB setiap hari.",
+    points: [
+      "Akses penuh Test IQ 120 soal per sesi",
+      "Akses semua jabatan SKB 30 soal per sesi",
+      "Submit IQ tanpa batas harian",
+      "Submit SKB tanpa batas harian",
+      "Maksimal 3 browser/perangkat per akun",
+    ],
   },
 ]
 
 export function UpgradeProDialog({
-  triggerLabel = "Upgrade Akun ke Pro",
-  title = "Upgrade Akun ke Pro",
-  description = "Buka akses penuh untuk Test IQ dan seluruh jabatan SKB dengan akun Pro.",
+  triggerLabel = "Upgrade Akun",
+  title = "Upgrade Akun",
+  description = "Pilih paket upgrade yang paling sesuai untuk membuka akses penuh latihan KDMP dan KNMP.",
   className,
 }: UpgradeProDialogProps) {
   const router = useRouter()
@@ -45,22 +68,26 @@ export function UpgradeProDialog({
   const [isPending, setIsPending] = useState(false)
   const [snapToken, setSnapToken] = useState("")
   const [orderId, setOrderId] = useState("")
+  const [selectedPlan, setSelectedPlan] = useState<UpgradePlanCard["code"]>("PRO")
 
   useEffect(() => {
     if (!open) {
       setError("")
       setIsPending(false)
+      setSnapToken("")
+      setOrderId("")
+      setSelectedPlan("PRO")
     }
   }, [open])
 
-  async function syncPayment(orderId: string) {
-    const response = await fetch(browserApiUrl("/api/v1/payments/pro-upgrade/confirm"), {
+  async function syncPayment(nextOrderId: string) {
+    const response = await fetch(browserApiUrl("/api/v1/payments/upgrade/confirm"), {
       method: "POST",
       credentials: "include",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ orderId }),
+      body: JSON.stringify({ orderId: nextOrderId }),
     })
     const data = await response.json()
     if (!response.ok) {
@@ -111,9 +138,13 @@ export function UpgradeProDialog({
       let nextOrderId = orderId
 
       if (!nextSnapToken || !nextOrderId) {
-        const response = await fetch(browserApiUrl("/api/v1/payments/pro-upgrade"), {
+        const response = await fetch(browserApiUrl("/api/v1/payments/upgrade"), {
           method: "POST",
           credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ accountType: selectedPlan }),
         })
         const data = await response.json()
         if (!response.ok) {
@@ -134,6 +165,8 @@ export function UpgradeProDialog({
     }
   }
 
+  const activePlan = upgradePlans.find((plan) => plan.code === selectedPlan) ?? upgradePlans[0]
+
   return (
     <>
       <Button type="button" size="lg" className={className} onClick={() => setOpen(true)}>
@@ -145,30 +178,66 @@ export function UpgradeProDialog({
         onOpenChange={setOpen}
         title={title}
         description={description}
-        className="max-w-3xl"
+        className="max-w-5xl"
       >
         <div className="space-y-6">
           <section className="rounded-[28px] bg-slate-950 p-6 text-white">
-            <div className="text-sm uppercase tracking-[0.3em] text-cyan-200">Paket Pro</div>
+            <div className="text-sm uppercase tracking-[0.3em] text-cyan-200">Upgrade Membership</div>
             <h3 className="mt-3 text-3xl font-semibold">Persiapan serius untuk lolos KDMP dan KNMP</h3>
-            <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-200">
-              Upgrade ke Pro untuk membuka bank latihan besar, paket kognitif lengkap, dan SKB jabatan tervalid dalam satu akun.
+            <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-200">
+              Buka bank latihan besar untuk IQ dan SKB, lalu pilih paket yang paling pas dengan ritme belajar Anda.
             </p>
           </section>
 
-          <section className="grid gap-4 md:grid-cols-2">
-            {proBenefits.map((benefit) => (
-              <article key={benefit.title} className="rounded-[24px] border border-slate-200 bg-slate-50 p-5">
-                <h4 className="text-lg font-semibold text-slate-950">{benefit.title}</h4>
-                <p className="mt-2 text-sm leading-7 text-slate-600">{benefit.description}</p>
-              </article>
-            ))}
+          <section className="grid gap-4 lg:grid-cols-2">
+            {upgradePlans.map((plan) => {
+              const isSelected = plan.code === selectedPlan
+
+              return (
+                <button
+                  key={plan.code}
+                  type="button"
+                  onClick={() => {
+                    setSelectedPlan(plan.code)
+                    setSnapToken("")
+                    setOrderId("")
+                    setError("")
+                  }}
+                  className={`rounded-[28px] border p-6 text-left transition ${
+                    isSelected
+                      ? "border-slate-950 bg-slate-950 text-white"
+                      : "border-slate-200 bg-white text-slate-950 hover:border-slate-300"
+                  }`}
+                >
+                  <div className={`text-xs uppercase tracking-[0.3em] ${isSelected ? "text-cyan-200" : "text-slate-500"}`}>
+                    {plan.badge}
+                  </div>
+                  <div className="mt-3 text-3xl font-semibold">{plan.price}</div>
+                  <h4 className="mt-3 text-xl font-semibold">{plan.headline}</h4>
+                  <p className={`mt-3 text-sm leading-7 ${isSelected ? "text-slate-200" : "text-slate-600"}`}>
+                    {plan.description}
+                  </p>
+                  <div className="mt-4 grid gap-2">
+                    {plan.points.map((point) => (
+                      <div
+                        key={point}
+                        className={`rounded-2xl px-4 py-3 text-sm leading-6 ${
+                          isSelected ? "bg-white/10 text-slate-100" : "bg-slate-50 text-slate-700"
+                        }`}
+                      >
+                        {point}
+                      </div>
+                    ))}
+                  </div>
+                </button>
+              )
+            })}
           </section>
 
           <section className="rounded-[24px] border border-amber-200 bg-amber-50 p-5">
-            <div className="text-sm font-semibold text-amber-800">Nilai jual paket Pro</div>
+            <div className="text-sm font-semibold text-amber-800">Paket terpilih</div>
             <p className="mt-2 text-sm leading-7 text-amber-900">
-              Dengan <strong>Rp30.000</strong>, peserta membuka akses latihan kognitif dan SKB yang jauh lebih besar: <strong>20 paket kognitif</strong>, sekitar <strong>2.500 soal</strong>, <strong>20 paket SKB</strong>, dan sekitar <strong>2.000 soal jabatan tervalid</strong>.
+              <strong>{activePlan.badge}</strong> dipilih dengan harga <strong>{activePlan.price}</strong>. Setelah pembayaran berhasil, akun Anda akan mengikuti batas akses paket ini.
             </p>
           </section>
 
@@ -177,8 +246,7 @@ export function UpgradeProDialog({
           <div className="flex flex-wrap gap-3">
             <Button
               type="button"
-
-              className="h-11 bg-red-400 rounded-2xl px-5"
+              className="h-11 rounded-2xl bg-red-400 px-5"
               onClick={() => {
                 setOpen(false)
               }}
@@ -192,7 +260,7 @@ export function UpgradeProDialog({
               onClick={handleUpgrade}
               disabled={isPending}
             >
-              {isPending ? "Memproses..." : "Upgrade"}
+              {isPending ? "Memproses..." : `Upgrade ke ${activePlan.badge}`}
             </Button>
           </div>
         </div>

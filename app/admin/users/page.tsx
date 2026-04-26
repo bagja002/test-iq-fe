@@ -90,6 +90,7 @@ export default async function AdminUsersPage({ searchParams }: AdminUsersPagePro
               <div key={user.id} className="grid gap-4 px-6 py-5 lg:grid-cols-[1fr_auto] lg:items-center">
                 <div>
                   <div className="text-base font-medium text-slate-950">{user.name}</div>
+                  <div className="mt-2 text-sm text-slate-600">{user.position}</div>
                   <div className="mt-2 text-sm text-slate-600">{user.email}</div>
                   <div className="mt-2 text-xs uppercase tracking-[0.2em] text-slate-500">
                     Akun {user.accountType}
@@ -98,6 +99,7 @@ export default async function AdminUsersPage({ searchParams }: AdminUsersPagePro
                 <UserStatusForm
                   id={user.id}
                   name={user.name}
+                  position={user.position}
                   role={user.role}
                   status={user.status}
                   accountType={user.accountType}

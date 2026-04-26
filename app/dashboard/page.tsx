@@ -6,13 +6,15 @@ import type { AttemptResult, AttemptSummary, TestConfigResponse } from "@iq/open
 import { LogoutButton } from "@/components/logout-button"
 import { StartTestButton } from "@/components/start-test-button"
 import { UpgradeProDialog } from "@/components/upgrade-pro-dialog"
+import { getAccountBadgeLabel, hasPaidAccess } from "@/lib/account-types"
+import { getSKBRoomCodeForPosition } from "@/lib/positions"
 import { fetchApi } from "@/lib/server-api"
 import { requireSession } from "@/lib/session"
 import { IQ_TOTAL_QUESTION_COUNT, SKB_QUESTION_COUNT_PER_JABATAN, FREE_IQ_QUESTION_LIMIT } from "@/lib/test-rules"
 
 export default async function DashboardPage() {
   const user = await requireSession()
-  const isPaidAccount = user.accountType === "PAID"
+  const isPaidAccount = hasPaidAccess(user.accountType)
 
   if (user.role === "ADMIN") {
     redirect("/admin")
@@ -28,6 +30,7 @@ export default async function DashboardPage() {
   const iqConfig = iqConfigRes.config
   const iqQuestionCount = isPaidAccount ? IQ_TOTAL_QUESTION_COUNT : FREE_IQ_QUESTION_LIMIT
   const skbConfigCount = (allConfigRes.configs ?? []).filter((item) => item.testType === "SKB").length
+  const hasMappedSKBRoom = Boolean(getSKBRoomCodeForPosition(user.position))
 
   return (
     <main className="page-shell space-y-6">
@@ -38,11 +41,11 @@ export default async function DashboardPage() {
             Selamat datang, {user.name.split(" ")[0]}
           </h1>
           <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-600">
-            Silakan pilih jenis test yang ingin dikerjakan. Test IQ dan SKB dipisah, dan SKB akan meminta Anda memilih jabatan terlebih dahulu.
+            Silakan pilih jenis test yang ingin dikerjakan. Test IQ dan SKB dipisah, dan SKB sekarang langsung mengikuti jabatan yang tersimpan di akun Anda.
           </p>
           <div className="mt-3 flex flex-wrap items-center gap-3">
             <p className="inline-flex rounded-full bg-slate-100 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-slate-700">
-              Status akun {user.accountType}
+              Status akun {getAccountBadgeLabel(user.accountType)}
             </p>
             {!isPaidAccount ? (
               <UpgradeProDialog
@@ -106,18 +109,27 @@ export default async function DashboardPage() {
           <h2 className="mt-3 text-3xl font-semibold text-slate-950">Test SKB</h2>
           <p className="mt-3 text-sm leading-7 text-slate-600">
             {isPaidAccount
-              ? "Setelah memilih SKB, Anda akan diminta memilih jabatan terlebih dahulu. Soal yang tampil akan mengikuti jabatan yang diampu."
-              : "SKB hanya terbuka untuk akun bayar. Setelah akun di-upgrade, Anda bisa memilih jabatan dan mengerjakan SKB penuh."}
+              ? "Setelah memilih SKB, sistem akan langsung membuka kamar sesuai jabatan akun Anda. Soal yang tampil mengikuti posisi yang diampu."
+              : "SKB hanya terbuka untuk akun PRO atau MAX. Setelah akun di-upgrade, Anda bisa langsung mengerjakan SKB penuh."}
           </p>
 
           <div className="mt-6 grid gap-4 md:grid-cols-2">
             <div className="rounded-[24px] bg-slate-50 p-5">
-              <div className="text-sm text-slate-500">Jumlah jabatan</div>
-              <div className="mt-2 text-3xl font-semibold text-slate-950">{skbConfigCount}</div>
+              <div className="text-sm text-slate-500">Jabatan akun</div>
+              <div className="mt-2 text-xl font-semibold text-slate-950">
+                {user.position || "Belum diisi"}
+              </div>
             </div>
             <div className="rounded-[24px] bg-slate-50 p-5">
               <div className="text-sm text-slate-500">Langkah berikutnya</div>
               <div className="mt-2 text-xl font-semibold text-slate-950">{SKB_QUESTION_COUNT_PER_JABATAN} soal per jabatan</div>
+              <p className="mt-2 text-xs leading-6 text-slate-500">
+                {isPaidAccount
+                  ? hasMappedSKBRoom
+                    ? `Sistem menyiapkan 1 kamar SKB dari ${skbConfigCount} jabatan yang tersedia.`
+                    : "Jabatan akun Anda belum terhubung ke kamar SKB."
+                  : "Upgrade akun untuk membuka SKB penuh."}
+              </p>
             </div>
           </div>
 

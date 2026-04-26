@@ -6,6 +6,7 @@ import { useState, useTransition } from "react"
 
 import { Button } from "@/components/ui/button"
 import { browserApiUrl } from "@/lib/browser-api"
+import { POSITION_OPTIONS } from "@/lib/positions"
 
 export function RegisterForm() {
   const router = useRouter()
@@ -14,6 +15,7 @@ export function RegisterForm() {
 
   function handleSubmit(formData: FormData) {
     const name = String(formData.get("name") ?? "")
+    const position = String(formData.get("position") ?? "")
     const email = String(formData.get("email") ?? "")
     const password = String(formData.get("password") ?? "")
     const confirmPassword = String(formData.get("confirmPassword") ?? "")
@@ -33,7 +35,7 @@ export function RegisterForm() {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ name, email, password }),
+          body: JSON.stringify({ name, position, email, password }),
         })
 
         const data = await response.json()
@@ -76,6 +78,27 @@ export function RegisterForm() {
           placeholder="nama@email.com"
           className="form-control"
         />
+      </div>
+      <div className="space-y-2">
+        <label className="text-sm font-medium text-slate-700" htmlFor="position">
+          Jabatan
+        </label>
+        <select
+          id="position"
+          name="position"
+          required
+          defaultValue=""
+          className="form-select"
+        >
+          <option value="" disabled>
+            Pilih jabatan
+          </option>
+          {POSITION_OPTIONS.map((position) => (
+            <option key={position} value={position}>
+              {position}
+            </option>
+          ))}
+        </select>
       </div>
       <div className="grid gap-5 md:grid-cols-2">
         <div className="space-y-2">

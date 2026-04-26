@@ -9,12 +9,13 @@ import { browserApiUrl } from "@/lib/browser-api"
 interface UserStatusFormProps {
   id: number
   name: string
+  position: string
   role: "USER" | "ADMIN"
   status: "ACTIVE" | "INACTIVE"
-  accountType: "FREE" | "PAID"
+  accountType: "FREE" | "PRO" | "MAX"
 }
 
-export function UserStatusForm({ id, name, role, status, accountType }: UserStatusFormProps) {
+export function UserStatusForm({ id, name, position, role, status, accountType }: UserStatusFormProps) {
   const router = useRouter()
   const [error, setError] = useState("")
   const [isPending, startTransition] = useTransition()
@@ -22,6 +23,7 @@ export function UserStatusForm({ id, name, role, status, accountType }: UserStat
   function handleSubmit(formData: FormData) {
     const payload = {
       name,
+      position,
       role: String(formData.get("role") ?? role),
       status: String(formData.get("status") ?? status),
       accountType: String(formData.get("accountType") ?? accountType),
@@ -75,7 +77,8 @@ export function UserStatusForm({ id, name, role, status, accountType }: UserStat
           className="form-inline-select"
         >
           <option value="FREE">FREE</option>
-          <option value="PAID">PAID</option>
+          <option value="PRO">PRO</option>
+          <option value="MAX">MAX</option>
         </select>
         <Button variant="outline" size="sm" type="submit" disabled={isPending}>
           {isPending ? "..." : "Update"}

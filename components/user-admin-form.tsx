@@ -6,6 +6,7 @@ import { useRef, useState, useTransition } from "react"
 import { Button } from "@/components/ui/button"
 import { Dialog } from "@/components/ui/dialog"
 import { browserApiUrl } from "@/lib/browser-api"
+import { POSITION_OPTIONS } from "@/lib/positions"
 
 export function UserAdminForm() {
   const router = useRouter()
@@ -19,6 +20,7 @@ export function UserAdminForm() {
 
     const payload = {
       name: String(formData.get("name") ?? ""),
+      position: String(formData.get("position") ?? ""),
       email: String(formData.get("email") ?? ""),
       password: String(formData.get("password") ?? ""),
       role: String(formData.get("role") ?? "USER"),
@@ -83,6 +85,23 @@ export function UserAdminForm() {
               placeholder="Nama lengkap"
               className="form-control"
             />
+            <select
+              name="position"
+              required
+              defaultValue=""
+              className="form-select"
+            >
+              <option value="" disabled>
+                Pilih jabatan
+              </option>
+              {POSITION_OPTIONS.map((position) => (
+                <option key={position} value={position}>
+                  {position}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="grid gap-3 md:grid-cols-1">
             <input
               name="email"
               type="email"
@@ -110,7 +129,8 @@ export function UserAdminForm() {
             </select>
             <select name="accountType" defaultValue="FREE" className="form-select">
               <option value="FREE">FREE</option>
-              <option value="PAID">PAID</option>
+              <option value="PRO">PRO</option>
+              <option value="MAX">MAX</option>
             </select>
           </div>
 
