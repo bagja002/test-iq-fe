@@ -8,9 +8,12 @@ import { browserApiUrl } from "@/lib/browser-api"
 
 interface StartTestButtonProps {
   currentAttemptId?: number
+  testType: "IQ" | "SKB"
+  roomCode?: string | null
+  label?: string
 }
 
-export function StartTestButton({ currentAttemptId }: StartTestButtonProps) {
+export function StartTestButton({ currentAttemptId, testType, roomCode, label }: StartTestButtonProps) {
   const router = useRouter()
   const [error, setError] = useState("")
   const [isPending, startTransition] = useTransition()
@@ -28,6 +31,13 @@ export function StartTestButton({ currentAttemptId }: StartTestButtonProps) {
         const response = await fetch(browserApiUrl("/api/v1/test-attempts/start"), {
           method: "POST",
           credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            testType,
+            roomCode: roomCode ?? "",
+          }),
         })
         const data = await response.json()
         if (!response.ok) {
@@ -49,7 +59,7 @@ export function StartTestButton({ currentAttemptId }: StartTestButtonProps) {
           ? "Menyiapkan..."
           : currentAttemptId
             ? "Lanjutkan Attempt Aktif"
-            : "Mulai Test IQ"}
+            : label ?? (testType === "SKB" ? "Mulai Test SKB" : "Mulai Test IQ")}
       </Button>
       {error ? (
         <p className="text-sm text-rose-600">{error}</p>

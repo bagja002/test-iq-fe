@@ -42,6 +42,10 @@ function getNextSection(sections: AttemptSection[]): AttemptSection | null {
   return sections.find((section) => !isCompletedSection(section)) ?? null
 }
 
+function getSectionOrder(sections: AttemptSection[], code: QuestionIndex): number {
+  return sections.findIndex((section) => section.code === code)
+}
+
 function getSectionQuestions(questions: AttemptQuestion[], code: QuestionIndex): AttemptQuestion[] {
   return questions.filter((question) => question.questionIndex === code)
 }
@@ -98,6 +102,8 @@ function sectionTone(section: AttemptSection, isNextStartable: boolean): string 
 
 export function TestPlayer({ attempt }: TestPlayerProps) {
   const router = useRouter()
+  const isSKB = attempt.testType === "SKB"
+  const testLabel = isSKB ? `SKB ${attempt.roomLabel ?? ""}`.trim() : "test IQ"
   const initialAnswers = getInitialAnswers(attempt)
   const [attemptState, setAttemptState] = useState<AttemptDetail>(attempt)
   const [answers, setAnswers] = useState<AnswerMap>(initialAnswers)
@@ -132,6 +138,10 @@ export function TestPlayer({ attempt }: TestPlayerProps) {
     : -1
   const hasPreviousQuestion = currentQuestionIndex > 0
   const hasNextQuestion = currentQuestionIndex >= 0 && currentQuestionIndex < activeQuestions.length - 1
+  const isOnLastQuestion = currentQuestionIndex >= 0 && currentQuestionIndex === activeQuestions.length - 1
+  const activeSectionOrder = activeSection ? getSectionOrder(sections, activeSection.code) : -1
+  const isLastSection =
+    activeSectionOrder >= 0 && activeSectionOrder === sections.length - 1
 
   const syncAttemptState = useCallback((detail: AttemptDetail) => {
     const nextAnswers = getInitialAnswers(detail)
@@ -340,8 +350,51 @@ export function TestPlayer({ attempt }: TestPlayerProps) {
     }
 
     autoSubmittedSectionRef.current = activeSection.id
-    submitSection(activeSection, "auto")
-  }, [activeSection, secondsLeft, submitSection])
+
+    startSectionTransition(async () => {
+      setError("")
+
+      try {
+        await flushAnswersRef.current({ keepalive: true, silent: true })
+
+        const sectionResponse = await fetch(
+          browserApiUrl(`/api/v1/test-attempts/${attempt.id}/sections/${activeSection.code}/submit`),
+          {
+            method: "POST",
+            credentials: "include",
+          },
+        )
+        const sectionData = await sectionResponse.json()
+        if (!sectionResponse.ok) {
+          throw new Error(sectionData?.message ?? "Gagal submit bagian")
+        }
+
+        if (isLastSection) {
+          const response = await fetch(browserApiUrl(`/api/v1/test-attempts/${attempt.id}/submit`), {
+            method: "POST",
+            credentials: "include",
+          })
+          const data = await response.json()
+          if (!response.ok) {
+            throw new Error(data?.message ?? "Gagal submit final")
+          }
+
+          const params = new URLSearchParams({ testType: attempt.testType })
+          if (attempt.roomCode) {
+            params.set("roomCode", attempt.roomCode)
+          }
+          router.replace(`/result?${params.toString()}`)
+          router.refresh()
+          return
+        }
+
+        await reloadAttemptDetail()
+        setSaveMessage(`Waktu ${activeSection.code} habis. Lanjutkan ke bagian berikutnya.`)
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Gagal submit otomatis saat waktu habis")
+      }
+    })
+  }, [activeSection, attempt.id, attempt.roomCode, attempt.testType, isLastSection, reloadAttemptDetail, router, secondsLeft, startSectionTransition])
 
   function selectAnswer(selectedOptionKey: string) {
     if (!currentQuestion) {
@@ -401,36 +454,65 @@ export function TestPlayer({ attempt }: TestPlayerProps) {
     setSelectedQuestionId(activeQuestions[currentQuestionIndex + 1].id)
   }
 
-  function handleFinalSubmit() {
-    startFinalTransition(async () => {
-      setError("")
-
-      try {
-        const saved = await flushAnswers()
-        if (!saved) {
-          return
-        }
-
-        const response = await fetch(browserApiUrl(`/api/v1/test-attempts/${attempt.id}/submit`), {
-          method: "POST",
-          credentials: "include",
-        })
-        const data = await response.json()
-        if (!response.ok) {
-          throw new Error(data?.message ?? "Gagal submit final")
-        }
-
-        router.replace("/result")
-        router.refresh()
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Gagal submit final")
-      }
-    })
-  }
-
   const minutes =
     secondsLeft === null ? null : String(Math.floor(secondsLeft / 60)).padStart(2, "0")
   const seconds = secondsLeft === null ? null : String(secondsLeft % 60).padStart(2, "0")
+
+  async function submitFinalAttempt() {
+    const response = await fetch(browserApiUrl(`/api/v1/test-attempts/${attempt.id}/submit`), {
+      method: "POST",
+      credentials: "include",
+    })
+    const data = await response.json()
+    if (!response.ok) {
+      throw new Error(data?.message ?? "Gagal submit final")
+    }
+
+    const params = new URLSearchParams({ testType: attempt.testType })
+    if (attempt.roomCode) {
+      params.set("roomCode", attempt.roomCode)
+    }
+    router.replace(`/result?${params.toString()}`)
+    router.refresh()
+  }
+
+  function handleLastQuestionSubmit() {
+    if (!activeSection || !isOnLastQuestion) {
+      return
+    }
+
+    if (isLastSection) {
+      startFinalTransition(async () => {
+        setError("")
+
+        try {
+          const saved = await flushAnswers()
+          if (!saved) {
+            return
+          }
+
+          const sectionResponse = await fetch(
+            browserApiUrl(`/api/v1/test-attempts/${attempt.id}/sections/${activeSection.code}/submit`),
+            {
+              method: "POST",
+              credentials: "include",
+            },
+          )
+          const sectionData = await sectionResponse.json()
+          if (!sectionResponse.ok) {
+            throw new Error(sectionData?.message ?? "Gagal submit bagian terakhir")
+          }
+
+          await submitFinalAttempt()
+        } catch (err) {
+          setError(err instanceof Error ? err.message : "Gagal submit final")
+        }
+      })
+      return
+    }
+
+    submitSection(activeSection, "manual")
+  }
 
   return (
     <div className="space-y-6">
@@ -438,12 +520,12 @@ export function TestPlayer({ attempt }: TestPlayerProps) {
         <div className="max-w-3xl">
           <p className="text-sm uppercase tracking-[0.3em] text-cyan-600">Instruksi Pengerjaan</p>
           <h1 className="mt-3 text-3xl font-semibold text-slate-950">
-            Kerjakan test IQ per bagian, satu index sampai selesai.
+            {isSKB ? `Kerjakan ${testLabel} sampai selesai.` : "Kerjakan test IQ per bagian, satu index sampai selesai."}
           </h1>
           <p className="mt-3 text-sm leading-7 text-slate-600">
-            Alurnya sekarang berurutan per index. Mulai dari bagian yang aktif, selesaikan, submit
-            bagian tersebut, lalu lanjut ke bagian berikutnya. Progress tiap jawaban akan disimpan
-            ke server agar saat refresh Anda kembali ke bagian yang sedang aktif.
+            {isSKB
+              ? "Alurnya tetap berurutan sesuai bagian yang aktif. Progress tiap jawaban akan disimpan ke server agar saat refresh Anda kembali ke posisi terakhir."
+              : "Alurnya sekarang berurutan per index. Mulai dari bagian yang aktif, selesaikan, submit bagian tersebut, lalu lanjut ke bagian berikutnya. Progress tiap jawaban akan disimpan ke server agar saat refresh Anda kembali ke bagian yang sedang aktif."}
           </p>
         </div>
         <LogoutButton
@@ -514,7 +596,8 @@ export function TestPlayer({ attempt }: TestPlayerProps) {
               <h2 className="mt-3 text-2xl font-semibold text-slate-950">{activeSection.label}</h2>
               <p className="mt-2 text-sm leading-7 text-slate-600">
                 Gunakan navigasi soal di atas untuk berpindah. Tombol `Previous` dan `Next`
-                tersedia di bawah area soal.
+                tersedia di bawah area soal. Tombol submit baru akan muncul saat Anda sudah
+                berada di nomor terakhir bagian yang aktif.
               </p>
             </div>
             <div className="rounded-[28px] bg-slate-950 px-5 py-4 text-white">
@@ -632,21 +715,20 @@ export function TestPlayer({ attempt }: TestPlayerProps) {
                 })}
               </div>
 
-              <div className="mt-6 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-                <div className="flex gap-3">
+              <div className="mt-6 space-y-3">
+                <div className="grid gap-3 md:grid-cols-2">
                   <Button
                     type="button"
-                    variant="outline"
-                    className="h-11 rounded-2xl"
+                    className="h-12 rounded-2xl bg-blue-500 text-white hover:bg-blue-600"
                     disabled={!hasPreviousQuestion || isSectionBusy}
                     onClick={goToPreviousQuestion}
                   >
                     Previous
                   </Button>
+
                   <Button
                     type="button"
-                    variant="outline"
-                    className="h-11 rounded-2xl"
+                    className="h-12 rounded-2xl bg-slate-900 text-white hover:bg-slate-700"
                     disabled={!hasNextQuestion || isSectionBusy}
                     onClick={goToNextQuestion}
                   >
@@ -654,14 +736,27 @@ export function TestPlayer({ attempt }: TestPlayerProps) {
                   </Button>
                 </div>
 
-                <Button
-                  type="button"
-                  className="h-11 rounded-2xl"
-                  disabled={isSectionBusy}
-                  onClick={() => submitSection(activeSection, "manual")}
-                >
-                  {isSectionBusy ? "Memproses..." : `Submit Bagian ${activeSection.code}`}
-                </Button>
+                {isOnLastQuestion ? (
+                  <Button
+                    type="button"
+                    className="h-12 w-full rounded-2xl"
+                    disabled={isSectionBusy || isFinalSubmitting}
+                    onClick={handleLastQuestionSubmit}
+                  >
+                    {isSectionBusy || isFinalSubmitting
+                      ? "Memproses..."
+                      : isLastSection
+                        ? isSKB
+                          ? "Submit Ujian SKB"
+                          : "Submit Ujian IQ"
+                        : `Submit Bagian ${activeSection.code}`}
+                  </Button>
+                ) : null}
+                {!isOnLastQuestion ? (
+                  <p className="text-sm text-slate-500">
+                    Gunakan tombol <span className="font-medium text-slate-700">Next</span> untuk lanjut sampai nomor terakhir. Tombol submit akan muncul di soal terakhir.
+                  </p>
+                ) : null}
               </div>
             </>
           ) : null}
@@ -690,21 +785,13 @@ export function TestPlayer({ attempt }: TestPlayerProps) {
 
       {allSectionsCompleted ? (
         <section className="rounded-[32px] border border-emerald-200 bg-emerald-50 p-8 shadow-[0_20px_60px_-40px_rgba(16,185,129,0.28)]">
-          <p className="text-sm uppercase tracking-[0.3em] text-emerald-700">Siap Submit Final</p>
+          <p className="text-sm uppercase tracking-[0.3em] text-emerald-700">Ujian Selesai</p>
           <h2 className="mt-3 text-2xl font-semibold text-slate-950">
-            Keempat bagian sudah selesai diisi.
+            {isSKB ? "SKB sudah selesai disubmit." : "Test IQ sudah selesai disubmit."}
           </h2>
           <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-700">
-            Setelah menekan submit final, sistem akan menghitung skor keseluruhan dan hasil IQ
-            screening Anda akan muncul di halaman hasil.
+            Hasil ujian diproses setelah submit dari nomor terakhir pada bagian terakhir.
           </p>
-          <Button
-            className="mt-6 h-12 rounded-2xl"
-            disabled={isFinalSubmitting}
-            onClick={handleFinalSubmit}
-          >
-            {isFinalSubmitting ? "Mengirim..." : "Submit Final Test IQ"}
-          </Button>
         </section>
       ) : null}
 

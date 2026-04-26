@@ -11,6 +11,7 @@ export const questionIndexOptions: Array<{ value: QuestionIndex; label: string }
   { value: "PRI", label: "PRI · Perceptual Reasoning Index" },
   { value: "WMI", label: "WMI · Working Memory Index" },
   { value: "PSI", label: "PSI · Processing Speed Index" },
+  { value: "SKB", label: "SKB · Tes Kompetensi Jabatan" },
 ]
 
 export const subtestOptions: SubtestOption[] = [
@@ -29,4 +30,9 @@ export const subtestOptions: SubtestOption[] = [
   { code: "SYMBOL_SEARCH", label: "Symbol Search", questionIndex: "PSI" },
   { code: "CODING", label: "Coding", questionIndex: "PSI" },
   { code: "CANCELLATION", label: "Cancellation", questionIndex: "PSI" },
+  { code: "MANAJER_KOPERASI_KDMP", label: "Manajer Kopreasi (KDMP)", questionIndex: "SKB" },
+  { code: "MANAGER_OPERASIONAL_KNMP", label: "Manager Operesial (KNMP)", questionIndex: "SKB" },
+  { code: "KEPALA_PRODUKSI", label: "Kepala Produksi (KNMP)", questionIndex: "SKB" },
+  { code: "PENGELOLA_KEUANGAN", label: "Pengelola Keuangan (KNMP)", questionIndex: "SKB" },
+  { code: "PENJAMIN_MUTU", label: "Penjamin Mutu (KNMP)", questionIndex: "SKB" },
 ]

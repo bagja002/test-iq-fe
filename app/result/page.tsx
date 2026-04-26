@@ -1,65 +1,130 @@
 import Link from "next/link"
 
-import type { AttemptResult } from "@iq/openapi"
+import type { AttemptResult, ResultListResponse, TestType } from "@iq/openapi"
 
 import { LogoutButton } from "@/components/logout-button"
 import { fetchApi } from "@/lib/server-api"
 import { requireSession } from "@/lib/session"
 
-export default async function ResultPage() {
+interface ResultPageProps {
+  searchParams: Promise<Record<string, string | string[] | undefined>>
+}
+
+function readParam(value: string | string[] | undefined): string {
+  if (Array.isArray(value)) {
+    return value[0] ?? ""
+  }
+  return value ?? ""
+}
+
+function buildQuery(testType: TestType, roomCode?: string | null): string {
+  const params = new URLSearchParams({ testType })
+  if (roomCode) {
+    params.set("roomCode", roomCode)
+  }
+  return params.toString()
+}
+
+export default async function ResultPage({ searchParams }: ResultPageProps) {
   await requireSession("USER")
-  const result = await fetchApi<{ attempt: AttemptResult | null }>("/api/v1/results/me/latest")
+
+  const params = await searchParams
+  const testType = (readParam(params.testType).toUpperCase() || "IQ") as TestType
+  const roomCode = readParam(params.roomCode).toUpperCase()
+  const [result, history] = await Promise.all([
+    fetchApi<{ attempt: AttemptResult | null }>(
+      `/api/v1/results/me/latest?${buildQuery(testType, roomCode)}`,
+    ),
+    fetchApi<ResultListResponse>(
+      `/api/v1/results/me?${buildQuery(testType, roomCode)}`,
+    ),
+  ])
+
+  const attempt = result.attempt
+  const displayAttempt = attempt ?? history.results[0] ?? null
+  const isSKB = attempt?.testType === "SKB" || testType === "SKB"
+  const roomName = displayAttempt?.roomLabel ?? "SKB"
+  const showAllSKBFields = isSKB && !roomCode
+  const uniqueSKBFields = Array.from(new Set(history.results.map((item) => item.roomLabel).filter(Boolean)))
+  const bestSKBScore = history.results.reduce<number>(
+    (best, item) => Math.max(best, item.skbScore ?? 0),
+    0,
+  )
+  const hasRenderableResult = Boolean(attempt) || (showAllSKBFields && history.results.length > 0)
 
   return (
     <main className="page-shell space-y-6">
       <header className="glass-panel flex items-end justify-between p-8">
         <div>
-          <p className="text-sm uppercase tracking-[0.3em] text-cyan-600">Hasil Test</p>
-          <h1 className="mt-3 text-4xl font-semibold text-slate-950">Skor akhir Anda</h1>
+          <p className="text-sm uppercase tracking-[0.3em] text-cyan-600">
+            {isSKB ? "Hasil SKB" : "Hasil Test IQ"}
+          </p>
+          <h1 className="mt-3 text-4xl font-semibold text-slate-950">
+            {isSKB ? `Skor akhir ${roomName}` : "Skor akhir Anda"}
+          </h1>
         </div>
         <LogoutButton />
       </header>
 
       <section className="glass-panel p-8">
-        {result.attempt ? (
+        {hasRenderableResult ? (
           <div className="space-y-6">
             <div className="grid gap-4 md:grid-cols-4">
-              <div className="rounded-[28px] bg-slate-950 p-6 text-white">
-                <div className="text-sm uppercase tracking-[0.3em] text-cyan-200">Estimasi IQ Screening</div>
-                <div className="mt-3 text-5xl font-semibold">
-                  {result.attempt.estimatedIq ?? "-"}
+              {isSKB ? (
+                <div className="rounded-[28px] bg-slate-950 p-6 text-white">
+                  <div className="text-sm uppercase tracking-[0.3em] text-cyan-200">
+                    {showAllSKBFields ? "Jabatan SKB" : "Kamar SKB"}
+                  </div>
+                  <div className="mt-3 text-3xl font-semibold">
+                    {showAllSKBFields ? `${uniqueSKBFields.length} jabatan` : roomName}
+                  </div>
                 </div>
-              </div>
+              ) : (
+                <div className="rounded-[28px] bg-slate-950 p-6 text-white">
+                  <div className="text-sm uppercase tracking-[0.3em] text-cyan-200">Estimasi IQ Screening</div>
+                  <div className="mt-3 text-5xl font-semibold">{displayAttempt?.estimatedIq ?? "-"}</div>
+                </div>
+              )}
               <div className="rounded-[28px] bg-slate-50 p-6">
-                <div className="text-sm text-slate-500">Klasifikasi</div>
+                <div className="text-sm text-slate-500">{isSKB ? "Nilai SKB" : "Klasifikasi"}</div>
                 <div className="mt-3 text-2xl font-semibold text-slate-950">
-                  {result.attempt.classificationLabel}
+                  {isSKB
+                    ? `${showAllSKBFields ? bestSKBScore : displayAttempt?.skbScore ?? 0}`
+                    : displayAttempt?.classificationLabel || "-"}
                 </div>
               </div>
               <div className="rounded-[28px] bg-slate-50 p-6">
-                <div className="text-sm text-slate-500">Skor mentah</div>
+                <div className="text-sm text-slate-500">{isSKB ? "Kategori" : "Skor mentah"}</div>
                 <div className="mt-3 text-4xl font-semibold text-slate-950">
-                  {result.attempt.rawScore}/{result.attempt.totalQuestions}
+                  {isSKB
+                    ? (showAllSKBFields ? "Rekap semua jabatan" : displayAttempt?.classificationLabel || roomName)
+                    : `${displayAttempt?.rawScore ?? 0}/${displayAttempt?.totalQuestions ?? 0}`}
                 </div>
               </div>
               <div className="rounded-[28px] bg-slate-50 p-6">
-                <div className="text-sm text-slate-500">Akurasi jawaban</div>
+                <div className="text-sm text-slate-500">{isSKB ? (showAllSKBFields ? "Jumlah attempt" : "Skor mentah") : "Akurasi jawaban"}</div>
                 <div className="mt-3 text-4xl font-semibold text-slate-950">
-                  {result.attempt.percentage}%
+                  {isSKB
+                    ? (showAllSKBFields ? `${history.results.length}` : `${displayAttempt?.rawScore ?? 0}/${displayAttempt?.totalQuestions ?? 0}`)
+                    : `${displayAttempt?.percentage ?? 0}%`}
                 </div>
               </div>
             </div>
 
             <div className="rounded-[28px] border border-cyan-100 bg-cyan-50/80 p-5 text-sm leading-7 text-slate-700">
-              Hasil ini adalah estimasi IQ untuk kebutuhan screening seleksi berbasis persentase jawaban benar pada test internal.
-              Nilai ini membantu pemeringkatan kandidat, tetapi bukan hasil psikotes klinis resmi.
+              {isSKB
+                ? "Nilai SKB dihitung dari persentase jawaban benar pada soal jabatan yang dipilih, lalu ditampilkan dalam skala 0 sampai 100."
+                : "Hasil ini adalah estimasi IQ untuk kebutuhan screening seleksi berbasis persentase jawaban benar pada test internal. Nilai ini membantu pemeringkatan kandidat, tetapi bukan hasil psikotes klinis resmi."}
             </div>
 
-            <div className="rounded-[28px] bg-slate-50 p-6">
-              <div className="text-sm uppercase tracking-[0.3em] text-cyan-700">Skor per index</div>
-              {result.attempt.indexScores.length > 0 ? (
-                <div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-                  {result.attempt.indexScores.map((item) => (
+            {!showAllSKBFields ? (
+              <div className="rounded-[28px] bg-slate-50 p-6">
+              <div className="text-sm uppercase tracking-[0.3em] text-cyan-700">
+                {isSKB ? "Ringkasan pengerjaan" : "Skor per index"}
+              </div>
+              {displayAttempt && displayAttempt.indexScores.length > 0 ? (
+                <div className={`mt-4 grid gap-4 ${isSKB ? "md:grid-cols-1 xl:grid-cols-1" : "md:grid-cols-2 xl:grid-cols-4"}`}>
+                  {displayAttempt.indexScores.map((item) => (
                     <div key={item.code} className="rounded-[24px] bg-white p-5 shadow-sm">
                       <div className="text-xs uppercase tracking-[0.25em] text-slate-500">{item.code}</div>
                       <div className="mt-2 text-lg font-semibold text-slate-950">{item.label}</div>
@@ -72,15 +137,61 @@ export default async function ResultPage() {
                 </div>
               ) : (
                 <div className="mt-4 rounded-[24px] bg-white p-5 text-sm leading-7 text-slate-600">
-                  Attempt lama ini dibuat sebelum struktur 4 index diterapkan, jadi breakdown VCI, PRI, WMI, dan PSI
-                  belum tersedia. Skor total dan estimasi IQ screening tetap valid untuk arsip hasil.
+                  Breakdown detail belum tersedia untuk attempt ini, tetapi skor total tetap tersimpan.
                 </div>
               )}
 
               <div className="mt-5 text-sm text-slate-500">
-                Status attempt: <span className="font-medium text-slate-700">{result.attempt.status}</span>
+                Status attempt: <span className="font-medium text-slate-700">{displayAttempt?.status ?? "-"}</span>
               </div>
             </div>
+            ) : null}
+
+            {history.results.length > 0 ? (
+              <div className="rounded-[28px] bg-slate-50 p-6">
+                <div className="text-sm uppercase tracking-[0.3em] text-cyan-700">
+                  {isSKB ? "Riwayat Nilai SKB per Jabatan" : "Riwayat Hasil IQ"}
+                </div>
+                <div className="mt-4 overflow-x-auto">
+                  <table className="min-w-full text-left text-sm text-slate-700">
+                    <thead>
+                      <tr className="border-b border-slate-200 text-slate-500">
+                        {isSKB ? <th className="px-4 py-3 font-medium">Jabatan</th> : null}
+                        <th className="px-4 py-3 font-medium">Tanggal</th>
+                        <th className="px-4 py-3 font-medium">{isSKB ? "Nilai" : "IQ / Klasifikasi"}</th>
+                        <th className="px-4 py-3 font-medium">Skor</th>
+                        <th className="px-4 py-3 font-medium">Akurasi</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {history.results.map((item) => (
+                        <tr key={item.id} className="border-b border-slate-100">
+                          {isSKB ? (
+                            <td className="px-4 py-3 font-medium text-slate-950">
+                              {item.roomLabel ?? "-"}
+                            </td>
+                          ) : null}
+                          <td className="px-4 py-3">
+                            {item.submittedAt
+                              ? new Date(item.submittedAt).toLocaleString("id-ID")
+                              : "-"}
+                          </td>
+                          <td className="px-4 py-3 font-medium text-slate-950">
+                            {isSKB
+                              ? `${item.skbScore ?? 0}`
+                              : item.estimatedIq != null
+                                ? `IQ ${item.estimatedIq}`
+                                : (item.classificationLabel ?? "-")}
+                          </td>
+                          <td className="px-4 py-3">{item.rawScore}/{item.totalQuestions}</td>
+                          <td className="px-4 py-3">{item.percentage}%</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            ) : null}
           </div>
         ) : (
           <div className="rounded-[28px] bg-slate-50 p-6 text-sm text-slate-600">
@@ -96,10 +207,10 @@ export default async function ResultPage() {
             Kembali ke dashboard
           </Link>
           <Link
-            href="/test/start"
+            href={`/test/start?${buildQuery(testType, roomCode)}`}
             className="rounded-2xl border border-slate-200 px-5 py-3 text-sm font-medium text-slate-700"
           >
-            Buka halaman test
+            {showAllSKBFields ? "Pilih jabatan SKB" : "Buka halaman test"}
           </Link>
         </div>
       </section>
