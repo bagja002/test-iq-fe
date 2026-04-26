@@ -6,3 +6,4 @@ export default async function Page() {
   const session = await getSession()
   redirect(session.authenticated ? "/dashboard" : "/login")
 }
+
