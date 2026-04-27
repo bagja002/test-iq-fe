@@ -31,6 +31,7 @@ export async function fetchApi<T>(
     cache: "no-store",
   })
 
+  console.log("response", response)
   const text = await response.text()
   const data = text ? JSON.parse(text) : null
 
