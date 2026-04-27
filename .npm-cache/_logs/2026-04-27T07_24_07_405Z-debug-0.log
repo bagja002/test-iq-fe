@@ -1,0 +1,14 @@
+0 verbose cli /home/simlat/n/bin/node /home/simlat/n/bin/npm
+1 info using npm@11.8.0
+2 info using node@v24.13.1
+3 silly config load:file:/home/simlat/n/lib/node_modules/npm/npmrc
+4 info config found workspace root at /home/simlat/kkp-test-iq/test-iq
+5 silly config load:file:/home/simlat/kkp-test-iq/test-iq/.npmrc
+6 silly config load:file:/home/simlat/.npmrc
+7 silly config load:file:/home/simlat/n/etc/npmrc
+8 verbose title npm start
+9 verbose argv "start"
+10 verbose logfile logs-max:10 dir:/home/simlat/kkp-test-iq/test-iq/apps/web/.npm-cache/_logs/2026-04-27T07_24_07_405Z-
+11 verbose logfile /home/simlat/kkp-test-iq/test-iq/apps/web/.npm-cache/_logs/2026-04-27T07_24_07_405Z-debug-0.log
+12 silly logfile start cleaning logs, removing 1 files
+13 silly logfile done cleaning log files
