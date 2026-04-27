@@ -39,5 +39,7 @@ export async function fetchApi<T>(
     throw new Error(data?.message ?? "Request failed")
   }
 
+  console.log("data", data)
+
   return data as T
 }
