@@ -7,6 +7,8 @@ import { AdminStatCard } from "@/components/admin-stat-card"
 import { ArchiveQuestionButton } from "@/components/archive-question-button"
 import { LogoutButton } from "@/components/logout-button"
 import { QuestionAdminForm } from "@/components/question-admin-form"
+import { QuestionAssetImportDialog } from "@/components/question-asset-import-dialog"
+import { QuestionImportDialog } from "@/components/question-import-dialog"
 import { fetchApi } from "@/lib/server-api"
 import { requireSession } from "@/lib/session"
 import { readSearchParam } from "@/lib/search-params"
@@ -101,7 +103,19 @@ export default async function AdminQuestionsPage({ searchParams }: AdminQuestion
         </form>
       </section>
 
-      <QuestionAdminForm />
+      <section className="glass-panel flex flex-col gap-4 p-6 md:flex-row md:items-center md:justify-between">
+        <div>
+          <h3 className="text-lg font-semibold text-slate-950">Tambah atau Import Soal</h3>
+          <p className="mt-1 text-sm text-slate-600">
+            Tambah satu soal manual, atau import banyak soal sekaligus dari Excel sesuai template.
+          </p>
+        </div>
+        <div className="flex flex-wrap gap-3">
+          <QuestionAssetImportDialog />
+          <QuestionImportDialog />
+          <QuestionAdminForm />
+        </div>
+      </section>
 
       <section className="glass-panel overflow-hidden">
         <div className="border-b border-slate-200 px-6 py-5">

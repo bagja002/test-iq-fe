@@ -68,17 +68,9 @@ export function QuestionAdminForm() {
 
   return (
     <>
-      <section className="glass-panel flex flex-col gap-4 p-6 md:flex-row md:items-center md:justify-between">
-        <div>
-          <h3 className="text-lg font-semibold text-slate-950">Tambah Soal Baru</h3>
-          <p className="mt-1 text-sm text-slate-600">
-            Saya pindahkan form tambah soal ke dialog agar halaman admin tetap fokus ke bank soal.
-          </p>
-        </div>
-        <Button type="button" className="h-11 rounded-2xl px-5" onClick={() => setOpen(true)}>
-          Tambah Soal
-        </Button>
-      </section>
+      <Button type="button" className="h-11 rounded-2xl px-5" onClick={() => setOpen(true)}>
+        Tambah Soal
+      </Button>
 
       <Dialog
         open={open}
