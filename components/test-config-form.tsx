@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation"
 import { useState, useTransition } from "react"
 
-import type { TestConfigResponse, TestType } from "@iq/openapi"
+import type { TestConfigResponse, TestType } from "@/lib/api-types"
 
 import { Button } from "@/components/ui/button"
 import { browserApiUrl } from "@/lib/browser-api"

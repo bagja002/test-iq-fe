@@ -1,4 +1,4 @@
-import type { AccountType } from "@iq/openapi"
+import type { AccountType } from "@/lib/api-types"
 
 export function hasPaidAccess(accountType: AccountType): boolean {
   return accountType !== "FREE"

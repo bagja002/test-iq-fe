@@ -1,6 +1,6 @@
 import Image from "next/image"
 
-import type { AdminOverview, QuestionSummary } from "@iq/openapi"
+import type { AdminOverview, QuestionSummary } from "@/lib/api-types"
 
 import { AdminNav } from "@/components/admin-nav"
 import { AdminStatCard } from "@/components/admin-stat-card"

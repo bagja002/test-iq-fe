@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation"
 
-import type { AttemptDetail } from "@iq/openapi"
+import type { AttemptDetail } from "@/lib/api-types"
 
 import { TestPlayer } from "@/components/test-player"
 import { fetchApi } from "@/lib/server-api"

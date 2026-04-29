@@ -2,7 +2,7 @@
 
 import { useRef, useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
-import type { QuestionImportResult } from "@iq/openapi"
+import type { QuestionImportResult } from "@/lib/api-types"
 
 import { Button } from "@/components/ui/button"
 import { Dialog } from "@/components/ui/dialog"

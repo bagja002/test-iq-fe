@@ -1,6 +1,6 @@
 import Link from "next/link"
 
-import type { AttemptResult, ResultListResponse, TestType } from "@iq/openapi"
+import type { AttemptResult, ResultListResponse, TestType } from "@/lib/api-types"
 
 import { LogoutButton } from "@/components/logout-button"
 import { fetchApi } from "@/lib/server-api"

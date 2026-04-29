@@ -3,6 +3,9 @@
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useState, useTransition } from "react"
+import { Eye, EyeOff, LoaderCircle, LogIn } from "lucide-react"
+
+import type { LoginResponse } from "@/lib/api-types"
 
 import { Button } from "@/components/ui/button"
 import { browserApiUrl } from "@/lib/browser-api"
@@ -10,6 +13,7 @@ import { browserApiUrl } from "@/lib/browser-api"
 export function LoginForm() {
   const router = useRouter()
   const [error, setError] = useState("")
+  const [showPassword, setShowPassword] = useState(false)
   const [isPending, startTransition] = useTransition()
 
   function handleSubmit(formData: FormData) {
@@ -29,12 +33,12 @@ export function LoginForm() {
           body: JSON.stringify({ email, password }),
         })
 
-        const data = await response.json()
+        const data = (await response.json()) as LoginResponse
         if (!response.ok) {
           throw new Error(data?.message ?? "Login gagal")
         }
 
-        router.replace("/dashboard")
+        router.replace(data.user.role === "ADMIN" ? "/admin" : "/dashboard")
         router.refresh()
       } catch (err) {
         setError(err instanceof Error ? err.message : "Login gagal")
@@ -53,6 +57,8 @@ export function LoginForm() {
           name="email"
           type="email"
           required
+          autoComplete="email"
+          inputMode="email"
           placeholder="nama@email.com"
           className="form-control"
         />
@@ -61,22 +67,34 @@ export function LoginForm() {
         <label className="text-sm font-medium text-slate-700" htmlFor="password">
           Password
         </label>
-        <input
-          id="password"
-          name="password"
-          type="password"
-          required
-          placeholder="Masukkan password"
-          className="form-control"
-        />
+        <div className="relative">
+          <input
+            id="password"
+            name="password"
+            type={showPassword ? "text" : "password"}
+            required
+            autoComplete="current-password"
+            placeholder="Masukkan password"
+            className="form-control pr-12"
+          />
+          <button
+            type="button"
+            className="absolute right-3 top-1/2 grid size-9 -translate-y-1/2 place-items-center rounded-xl text-slate-500 transition hover:bg-slate-100 hover:text-slate-900"
+            onClick={() => setShowPassword((value) => !value)}
+            aria-label={showPassword ? "Sembunyikan password" : "Lihat password"}
+          >
+            {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+          </button>
+        </div>
       </div>
       {error ? (
         <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
           {error}
         </div>
       ) : null}
-      <Button type="submit" size="lg" className="h-12 w-full rounded-2xl">
-        {isPending ? "Memproses..." : "Masuk ke Dashboard"}
+      <Button type="submit" size="lg" className="h-12 w-full rounded-2xl gap-2" disabled={isPending}>
+        {isPending ? <LoaderCircle className="size-4 animate-spin" /> : <LogIn className="size-4" />}
+        {isPending ? "Memproses..." : "Masuk"}
       </Button>
       <div className="rounded-2xl bg-slate-100 px-4 py-4 text-sm leading-7 text-slate-600">
         Belum punya akun peserta?{" "}

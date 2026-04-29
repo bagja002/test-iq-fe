@@ -1,4 +1,4 @@
-import type { TestType } from "@iq/openapi"
+import type { TestType } from "@/lib/api-types"
 
 export const FREE_IQ_QUESTION_LIMIT = 2
 export const IQ_QUESTIONS_PER_SECTION = 30

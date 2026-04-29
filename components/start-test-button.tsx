@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation"
 import { useState, useTransition } from "react"
+import { LoaderCircle, PlayCircle } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { browserApiUrl } from "@/lib/browser-api"
@@ -11,9 +12,10 @@ interface StartTestButtonProps {
   testType: "IQ" | "SKB"
   roomCode?: string | null
   label?: string
+  className?: string
 }
 
-export function StartTestButton({ currentAttemptId, testType, roomCode, label }: StartTestButtonProps) {
+export function StartTestButton({ currentAttemptId, testType, roomCode, label, className }: StartTestButtonProps) {
   const router = useRouter()
   const [error, setError] = useState("")
   const [isPending, startTransition] = useTransition()
@@ -54,15 +56,21 @@ export function StartTestButton({ currentAttemptId, testType, roomCode, label }:
 
   return (
     <div className="space-y-3">
-      <Button size="lg" className="h-12 rounded-2xl" onClick={handleClick} disabled={isPending}>
+      <Button
+        size="lg"
+        className={`h-12 w-full rounded-2xl gap-2 sm:w-auto ${className ?? ""}`}
+        onClick={handleClick}
+        disabled={isPending}
+      >
+        {isPending ? <LoaderCircle className="size-4 animate-spin" /> : <PlayCircle className="size-4" />}
         {isPending
           ? "Menyiapkan..."
           : currentAttemptId
-            ? "Lanjutkan Attempt Aktif"
-            : label ?? (testType === "SKB" ? "Mulai Test SKB" : "Mulai Test IQ")}
+            ? "Lanjutkan Test"
+            : label ?? (testType === "SKB" ? "Mulai SKB" : "Mulai IQ")}
       </Button>
       {error ? (
-        <p className="text-sm text-rose-600">{error}</p>
+        <p className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">{error}</p>
       ) : null}
     </div>
   )

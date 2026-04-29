@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 
-import type { AccountType } from "@iq/openapi"
+import type { AccountType } from "@/lib/api-types"
 
 import { Button } from "@/components/ui/button"
 import { Dialog } from "@/components/ui/dialog"

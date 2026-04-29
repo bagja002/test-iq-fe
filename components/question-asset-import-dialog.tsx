@@ -1,7 +1,7 @@
 "use client"
 
 import { useRef, useState, useTransition } from "react"
-import type { QuestionAssetImportResult } from "@iq/openapi"
+import type { QuestionAssetImportResult } from "@/lib/api-types"
 
 import { Button } from "@/components/ui/button"
 import { Dialog } from "@/components/ui/dialog"

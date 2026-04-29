@@ -3,12 +3,10 @@ FROM node:24-alpine AS builder
 WORKDIR /app
 
 COPY package.json package-lock.json .npmrc ./
-COPY packages/openapi/package.json packages/openapi/package.json
 COPY apps/web/package.json apps/web/package.json
 
 RUN npm install
 
-COPY packages/openapi packages/openapi
 COPY apps/web apps/web
 
 ARG NEXT_PUBLIC_API_URL=""

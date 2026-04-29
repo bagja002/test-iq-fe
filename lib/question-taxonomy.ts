@@ -1,4 +1,4 @@
-import type { QuestionIndex } from "@iq/openapi"
+import type { QuestionIndex } from "@/lib/api-types"
 
 export interface SubtestOption {
   code: string

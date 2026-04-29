@@ -1,4 +1,4 @@
-import type { AdminOverview, UserSummary } from "@iq/openapi"
+import type { AdminOverview, UserSummary } from "@/lib/api-types"
 
 import { AdminNav } from "@/components/admin-nav"
 import { AdminStatCard } from "@/components/admin-stat-card"

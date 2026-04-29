@@ -19,13 +19,13 @@ export default async function RegisterPage() {
 
   return (
     <main className="page-shell flex items-center justify-center">
-      <div className="grid w-full items-center gap-10 lg:grid-cols-[1.1fr_0.9fr]">
+      <div className="grid w-full items-center gap-6 lg:grid-cols-[1.1fr_0.9fr] lg:gap-10">
         <ProOfferPanel />
 
-        <section className="glass-panel p-8 md:p-10">
+        <section className="glass-panel order-first p-5 md:p-10 lg:order-none">
           <div className="mb-6">
-            <p className="text-sm uppercase tracking-[0.3em] text-amber-600">Daftar</p>
-            <h2 className="mt-3 text-3xl font-semibold text-slate-950">Buat akun peserta baru</h2>
+            <p className="text-xs uppercase tracking-[0.24em] text-amber-600 md:text-sm md:tracking-[0.3em]">Daftar</p>
+            <h2 className="mt-3 text-2xl font-semibold text-slate-950 md:text-3xl">Buat akun peserta baru</h2>
             <p className="mt-2 text-sm leading-7 text-slate-600">
               Setelah registrasi berhasil, Anda akan langsung masuk ke dashboard peserta.
             </p>

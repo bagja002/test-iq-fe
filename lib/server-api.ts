@@ -1,7 +1,9 @@
 import { cookies } from "next/headers"
 
 const API_URL =
-  process.env.API_URL ?? process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080"
+  process.env.API_URL?.trim() ||
+  process.env.NEXT_PUBLIC_API_URL?.trim() ||
+  "http://localhost:8080"
 
 type FetchApiOptions = RequestInit & {
   withCookies?: boolean
@@ -31,15 +33,12 @@ export async function fetchApi<T>(
     cache: "no-store",
   })
 
-
   const text = await response.text()
   const data = text ? JSON.parse(text) : null
 
   if (!response.ok) {
     throw new Error(data?.message ?? "Request failed")
   }
-
-  console.log("data", data)
 
   return data as T
 }

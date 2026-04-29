@@ -1,4 +1,4 @@
-import type { AdminOverview, TestConfigResponse } from "@iq/openapi"
+import type { AdminOverview, TestConfigResponse } from "@/lib/api-types"
 
 import { AdminNav } from "@/components/admin-nav"
 import { AdminStatCard } from "@/components/admin-stat-card"

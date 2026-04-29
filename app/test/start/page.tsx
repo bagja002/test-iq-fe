@@ -1,7 +1,7 @@
 import Link from "next/link"
 import { redirect } from "next/navigation"
 
-import type { AttemptSummary, TestConfigResponse, TestType } from "@iq/openapi"
+import type { AttemptSummary, TestConfigResponse, TestType } from "@/lib/api-types"
 
 import { LogoutButton } from "@/components/logout-button"
 import { StartTestButton } from "@/components/start-test-button"

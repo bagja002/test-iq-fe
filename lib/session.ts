@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation"
 
-import type { Role, SessionResponse } from "@iq/openapi"
+import type { Role, SessionResponse } from "@/lib/api-types"
 
 import { fetchApi } from "@/lib/server-api"
 

@@ -9,7 +9,7 @@ import type {
   AttemptQuestion,
   AttemptSection,
   QuestionIndex,
-} from "@iq/openapi"
+} from "@/lib/api-types"
 
 import { LogoutButton } from "@/components/logout-button"
 import { Button } from "@/components/ui/button"
