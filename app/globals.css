@@ -136,6 +136,30 @@
   @apply mx-auto min-h-screen w-full max-w-7xl px-4 py-6 md:px-8;
 }
 
+.landing-canvas {
+  background:
+    radial-gradient(circle at 12% 12%, rgba(45, 212, 191, 0.26), transparent 26%),
+    radial-gradient(circle at 88% 8%, rgba(251, 191, 36, 0.24), transparent 24%),
+    radial-gradient(circle at 78% 72%, rgba(14, 165, 233, 0.18), transparent 30%),
+    linear-gradient(135deg, rgba(240, 253, 250, 0.95), rgba(255, 251, 235, 0.82) 45%, rgba(248, 250, 252, 0.96));
+}
+
+.landing-reveal {
+  animation: landing-reveal 0.72s cubic-bezier(0.2, 0.85, 0.2, 1) both;
+}
+
+.landing-delay-1 {
+  animation-delay: 0.12s;
+}
+
+.landing-delay-2 {
+  animation-delay: 0.22s;
+}
+
+.landing-float {
+  animation: landing-float 6.5s ease-in-out infinite;
+}
+
 .glass-panel {
   @apply rounded-[32px] border border-white/70 bg-white/85 shadow-[0_25px_60px_-32px_rgba(15,23,42,0.35)] backdrop-blur;
 }
@@ -154,4 +178,24 @@
 
 .form-inline-select {
   @apply h-10 rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-950 outline-none;
+}
+
+@keyframes landing-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes landing-float {
+  0%, 100% {
+    transform: translateY(0) rotate(-5deg);
+  }
+  50% {
+    transform: translateY(-10px) rotate(5deg);
+  }
 }

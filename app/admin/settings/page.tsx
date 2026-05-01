@@ -1,17 +1,19 @@
-import type { AdminOverview, TestConfigResponse } from "@/lib/api-types"
+import type { AdminOverview, TestConfigResponse, UpgradePlan } from "@/lib/api-types"
 
 import { AdminNav } from "@/components/admin-nav"
 import { AdminStatCard } from "@/components/admin-stat-card"
 import { LogoutButton } from "@/components/logout-button"
+import { MembershipPlanForm } from "@/components/membership-plan-form"
 import { TestConfigForm } from "@/components/test-config-form"
 import { fetchApi } from "@/lib/server-api"
 import { requireSession } from "@/lib/session"
 
 export default async function AdminSettingsPage() {
   await requireSession("ADMIN")
-  const [configRes, overviewRes] = await Promise.all([
+  const [configRes, overviewRes, membershipRes] = await Promise.all([
     fetchApi<{ configs: TestConfigResponse[] }>("/api/v1/admin/test-config"),
     fetchApi<{ overview: AdminOverview }>("/api/v1/admin/overview"),
+    fetchApi<{ plans: UpgradePlan[] }>("/api/v1/admin/membership-plans"),
   ])
 
   const configs = configRes.configs ?? []
@@ -95,6 +97,8 @@ export default async function AdminSettingsPage() {
           </div>
         </section>
       ) : null}
+
+      <MembershipPlanForm plans={membershipRes.plans ?? []} />
 
       <div className="grid gap-6 xl:grid-cols-2">
         <TestConfigForm

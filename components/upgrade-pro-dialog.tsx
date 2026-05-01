@@ -3,11 +3,12 @@
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 
-import type { AccountType } from "@/lib/api-types"
+import type { AccountType, UpgradePlan } from "@/lib/api-types"
 
 import { Button } from "@/components/ui/button"
 import { Dialog } from "@/components/ui/dialog"
 import { browserApiUrl } from "@/lib/browser-api"
+import { formatRupiah } from "@/lib/currency"
 
 interface UpgradeProDialogProps {
   triggerLabel?: string
@@ -19,17 +20,20 @@ interface UpgradeProDialogProps {
 interface UpgradePlanCard {
   code: Extract<AccountType, "PRO" | "MAX">
   badge: string
-  price: string
   headline: string
   description: string
   points: string[]
+}
+
+const fallbackPlanPrices: Record<UpgradePlanCard["code"], number> = {
+  PRO: 40000,
+  MAX: 50000,
 }
 
 const upgradePlans: UpgradePlanCard[] = [
   {
     code: "PRO",
     badge: "Paket Pro",
-    price: "Rp40.000",
     headline: "Semua fitur terbuka dengan batas latihan harian",
     description: "Cocok untuk peserta yang ingin akses penuh IQ dan SKB, tetapi tetap dengan kontrol pemakaian harian.",
     points: [
@@ -43,7 +47,6 @@ const upgradePlans: UpgradePlanCard[] = [
   {
     code: "MAX",
     badge: "Paket Max",
-    price: "Rp50.000",
     headline: "Full akses tanpa batas submit harian",
     description: "Cocok untuk peserta yang ingin belajar intens tanpa dibatasi jumlah submit IQ atau SKB setiap hari.",
     points: [
@@ -69,6 +72,8 @@ export function UpgradeProDialog({
   const [snapToken, setSnapToken] = useState("")
   const [orderId, setOrderId] = useState("")
   const [selectedPlan, setSelectedPlan] = useState<UpgradePlanCard["code"]>("PRO")
+  const [serverPlans, setServerPlans] = useState<UpgradePlan[]>([])
+  const [isLoadingPlans, setIsLoadingPlans] = useState(false)
 
   useEffect(() => {
     if (!open) {
@@ -77,6 +82,44 @@ export function UpgradeProDialog({
       setSnapToken("")
       setOrderId("")
       setSelectedPlan("PRO")
+    }
+  }, [open])
+
+  useEffect(() => {
+    if (!open) {
+      return
+    }
+
+    let ignore = false
+    setIsLoadingPlans(true)
+
+    async function loadPlans() {
+      try {
+        const response = await fetch(browserApiUrl("/api/v1/payments/upgrade/plans"), {
+          credentials: "include",
+        })
+        const data = await response.json()
+        if (!response.ok) {
+          throw new Error(data?.message ?? "Gagal mengambil harga upgrade")
+        }
+        if (!ignore) {
+          setServerPlans(Array.isArray(data.plans) ? data.plans : [])
+        }
+      } catch (err) {
+        if (!ignore) {
+          setError(err instanceof Error ? err.message : "Gagal mengambil harga upgrade")
+        }
+      } finally {
+        if (!ignore) {
+          setIsLoadingPlans(false)
+        }
+      }
+    }
+
+    loadPlans()
+
+    return () => {
+      ignore = true
     }
   }, [open])
 
@@ -166,6 +209,9 @@ export function UpgradeProDialog({
   }
 
   const activePlan = upgradePlans.find((plan) => plan.code === selectedPlan) ?? upgradePlans[0]
+  const activeServerPlan = serverPlans.find((plan) => plan.accountType === activePlan.code)
+  const activePlanName = activeServerPlan?.name ?? activePlan.badge
+  const activePlanPrice = activeServerPlan?.formattedPrice ?? formatRupiah(fallbackPlanPrices[activePlan.code])
 
   return (
     <>
@@ -192,6 +238,9 @@ export function UpgradeProDialog({
           <section className="grid gap-4 lg:grid-cols-2">
             {upgradePlans.map((plan) => {
               const isSelected = plan.code === selectedPlan
+              const serverPlan = serverPlans.find((item) => item.accountType === plan.code)
+              const planName = serverPlan?.name ?? plan.badge
+              const planPrice = serverPlan?.formattedPrice ?? formatRupiah(fallbackPlanPrices[plan.code])
 
               return (
                 <button
@@ -210,9 +259,9 @@ export function UpgradeProDialog({
                   }`}
                 >
                   <div className={`text-xs uppercase tracking-[0.3em] ${isSelected ? "text-cyan-200" : "text-slate-500"}`}>
-                    {plan.badge}
+                    {planName}
                   </div>
-                  <div className="mt-3 text-3xl font-semibold">{plan.price}</div>
+                  <div className="mt-3 text-3xl font-semibold">{planPrice}</div>
                   <h4 className="mt-3 text-xl font-semibold">{plan.headline}</h4>
                   <p className={`mt-3 text-sm leading-7 ${isSelected ? "text-slate-200" : "text-slate-600"}`}>
                     {plan.description}
@@ -237,8 +286,11 @@ export function UpgradeProDialog({
           <section className="rounded-[24px] border border-amber-200 bg-amber-50 p-5">
             <div className="text-sm font-semibold text-amber-800">Paket terpilih</div>
             <p className="mt-2 text-sm leading-7 text-amber-900">
-              <strong>{activePlan.badge}</strong> dipilih dengan harga <strong>{activePlan.price}</strong>. Setelah pembayaran berhasil, akun Anda akan mengikuti batas akses paket ini.
+              <strong>{activePlanName}</strong> dipilih dengan harga <strong>{activePlanPrice}</strong>. Setelah pembayaran berhasil, akun Anda akan mengikuti batas akses paket ini.
             </p>
+            {isLoadingPlans ? (
+              <p className="mt-2 text-xs font-semibold text-amber-700">Mengambil harga terbaru dari admin...</p>
+            ) : null}
           </section>
 
           {error ? <p className="text-sm text-rose-600">{error}</p> : null}
@@ -260,7 +312,7 @@ export function UpgradeProDialog({
               onClick={handleUpgrade}
               disabled={isPending}
             >
-              {isPending ? "Memproses..." : `Upgrade ke ${activePlan.badge}`}
+              {isPending ? "Memproses..." : `Upgrade ke ${activePlanName}`}
             </Button>
           </div>
         </div>

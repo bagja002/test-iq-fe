@@ -44,6 +44,17 @@ export interface LoginResponse {
   user: SessionUser
 }
 
+export interface UpgradePlan {
+  accountType: Extract<AccountType, "PRO" | "MAX">
+  productCode: string
+  name: string
+  description: string
+  amount: number
+  formattedPrice: string
+  submitLimitPerDay: number
+  isActive: boolean
+}
+
 export interface QuestionOptionInput {
   key: string
   content: string
