@@ -1,8 +1,12 @@
 import type { Metadata } from "next"
 import Link from "next/link"
 import { redirect } from "next/navigation"
-import { ArrowRight, BadgeCheck, BookOpenCheck, ClipboardList, Route, Sparkles, Waves } from "lucide-react"
+import { ArrowRight, BadgeCheck, BookOpen, BookOpenCheck, ClipboardList, Route, Sparkles, Waves } from "lucide-react"
 
+import type { UpgradePlan } from "@/lib/api-types"
+
+import { formatRupiah } from "@/lib/currency"
+import { fetchApi } from "@/lib/server-api"
 import { getSession } from "@/lib/session"
 
 export const metadata: Metadata = {
@@ -55,6 +59,46 @@ const learningFlow = [
   },
 ]
 
+const fallbackUpgradePlans: UpgradePlan[] = [
+  {
+    accountType: "PRO",
+    productCode: "PRO_UPGRADE",
+    name: "Paket Pro",
+    description: "Semua fitur terbuka dengan batas 10 submit IQ dan 10 submit SKB per hari.",
+    amount: 40000,
+    formattedPrice: formatRupiah(40000),
+    submitLimitPerDay: 10,
+    isActive: true,
+  },
+  {
+    accountType: "MAX",
+    productCode: "MAX_UPGRADE",
+    name: "Paket Max",
+    description: "Full akses tanpa batas submit harian untuk IQ dan SKB.",
+    amount: 50000,
+    formattedPrice: formatRupiah(50000),
+    submitLimitPerDay: 0,
+    isActive: true,
+  },
+]
+
+const planBenefits: Record<UpgradePlan["accountType"], string[]> = {
+  PRO: [
+    "Semua fitur IQ dan SKB terbuka",
+    "10x submit IQ per hari",
+    "10x submit SKB per hari",
+    "SKB otomatis sesuai jabatan akun",
+    "Maksimal 3 browser/perangkat per akun",
+  ],
+  MAX: [
+    "Full akses IQ dan SKB tanpa batas submit harian",
+    "Cocok untuk latihan intens berulang",
+    "Soal berubah saat attempt baru dimulai",
+    "Riwayat nilai IQ dan SKB tersimpan",
+    "Maksimal 3 browser/perangkat per akun",
+  ],
+}
+
 const seoPoints = [
   {
     title: "TO dan Try Out KDMP KNMP",
@@ -88,11 +132,30 @@ const faqItems = [
   },
 ]
 
+async function getLandingUpgradePlans() {
+  try {
+    const response = await fetchApi<{ plans: UpgradePlan[] }>("/api/v1/payments/upgrade/plans", {
+      withCookies: false,
+    })
+    const plans = response.plans?.filter((plan) => plan.isActive) ?? []
+    if (plans.length === 0) {
+      return fallbackUpgradePlans
+    }
+
+    return fallbackUpgradePlans.map(
+      (fallback) => plans.find((plan) => plan.accountType === fallback.accountType) ?? fallback,
+    )
+  } catch {
+    return fallbackUpgradePlans
+  }
+}
+
 export default async function Page() {
   const session = await getSession()
   if (session.authenticated) {
     redirect("/dashboard")
   }
+  const upgradePlans = await getLandingUpgradePlans()
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -115,8 +178,8 @@ export default async function Page() {
       <div className="mx-auto flex w-full max-w-7xl flex-col gap-8 px-4 py-5 md:px-8 md:py-8">
         <nav className="landing-reveal flex items-center justify-between rounded-[28px] border border-white/70 bg-white/80 px-4 py-3 shadow-[0_18px_50px_-35px_rgba(15,23,42,0.45)] backdrop-blur md:px-6">
           <Link href="/" className="flex items-center gap-3">
-            <span className="grid size-11 place-items-center rounded-2xl bg-slate-950 text-sm font-black text-white">
-              TO
+            <span className="grid size-11 place-items-center rounded-2xl bg-slate-950 text-white shadow-[0_16px_34px_-24px_rgba(15,23,42,0.9)]">
+              <BookOpen className="size-5" aria-hidden="true" />
             </span>
             <span>
               <span className="block text-sm font-black uppercase tracking-[0.22em] text-slate-950">KDMP KNMP</span>
@@ -236,6 +299,94 @@ export default async function Page() {
               </article>
             )
           })}
+        </section>
+
+        <section className="landing-reveal glass-panel overflow-hidden p-6 md:p-10">
+          <div className="grid gap-8 lg:grid-cols-[0.82fr_1.18fr] lg:items-end">
+            <div>
+              <p className="text-xs font-black uppercase tracking-[0.3em] text-emerald-600">Harga Membership</p>
+              <h2 className="mt-4 text-3xl font-black tracking-tight text-slate-950 md:text-5xl">
+                Pilih akses latihan sesuai ritme belajar.
+              </h2>
+              <p className="mt-4 text-sm leading-7 text-slate-600 md:text-base">
+                Mulai gratis untuk coba preview IQ. Upgrade ke Pro atau Max untuk membuka bank soal, SKB jabatan, dan riwayat latihan yang lebih lengkap.
+              </p>
+            </div>
+            <div className="rounded-[28px] bg-slate-950 p-5 text-white">
+              <div className="text-xs font-black uppercase tracking-[0.28em] text-cyan-200">Benefit Utama</div>
+              <p className="mt-3 text-sm leading-7 text-slate-200">
+                Pro cocok untuk latihan teratur harian. Max cocok untuk peserta yang ingin latihan intens tanpa batas submit harian.
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-8 grid gap-4 lg:grid-cols-2">
+            {upgradePlans.map((plan) => {
+              const isMax = plan.accountType === "MAX"
+              return (
+                <article
+                  key={plan.accountType}
+                  className={`relative overflow-hidden rounded-[30px] border p-6 ${
+                    isMax
+                      ? "border-slate-950 bg-slate-950 text-white"
+                      : "border-slate-200 bg-white text-slate-950"
+                  }`}
+                >
+                  {isMax ? (
+                    <div className="absolute -right-10 -top-16 size-40 rounded-full bg-cyan-300/25 blur-2xl" />
+                  ) : null}
+                  <div className="relative">
+                    <div className="flex flex-wrap items-start justify-between gap-4">
+                      <div>
+                        <div className={`text-xs font-black uppercase tracking-[0.28em] ${isMax ? "text-cyan-200" : "text-slate-500"}`}>
+                          {plan.accountType === "PRO" ? "Paket hemat" : "Paket paling bebas"}
+                        </div>
+                        <h3 className="mt-3 text-2xl font-black">{plan.name}</h3>
+                      </div>
+                      <div className={`rounded-2xl px-4 py-2 text-sm font-black ${isMax ? "bg-white text-slate-950" : "bg-slate-950 text-white"}`}>
+                        {plan.accountType}
+                      </div>
+                    </div>
+
+                    <div className="mt-6 flex items-end gap-2">
+                      <span className="text-4xl font-black tracking-tight md:text-5xl">{plan.formattedPrice}</span>
+                      <span className={`pb-2 text-sm font-semibold ${isMax ? "text-slate-300" : "text-slate-500"}`}>
+                        sekali bayar
+                      </span>
+                    </div>
+                    <p className={`mt-4 text-sm leading-7 ${isMax ? "text-slate-200" : "text-slate-600"}`}>
+                      {plan.description}
+                    </p>
+
+                    <div className="mt-6 grid gap-3">
+                      {planBenefits[plan.accountType].map((benefit) => (
+                        <div
+                          key={benefit}
+                          className={`flex items-start gap-3 rounded-2xl px-4 py-3 text-sm leading-6 ${
+                            isMax ? "bg-white/10 text-slate-100" : "bg-slate-50 text-slate-700"
+                          }`}
+                        >
+                          <BadgeCheck className={`mt-0.5 size-4 shrink-0 ${isMax ? "text-cyan-200" : "text-emerald-600"}`} />
+                          <span>{benefit}</span>
+                        </div>
+                      ))}
+                    </div>
+
+                    <Link
+                      href="/register"
+                      className={`mt-6 inline-flex h-12 w-full items-center justify-center rounded-2xl text-sm font-black transition hover:-translate-y-0.5 ${
+                        isMax
+                          ? "bg-white text-slate-950 hover:bg-slate-100"
+                          : "bg-slate-950 text-white hover:bg-slate-800"
+                      }`}
+                    >
+                      Daftar dan pilih {plan.name}
+                    </Link>
+                  </div>
+                </article>
+              )
+            })}
+          </div>
         </section>
 
         <section className="glass-panel landing-reveal grid gap-8 p-6 md:p-10 lg:grid-cols-[0.9fr_1.1fr]">

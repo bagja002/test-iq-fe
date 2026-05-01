@@ -10,11 +10,26 @@ import { requireSession } from "@/lib/session"
 
 export default async function AdminSettingsPage() {
   await requireSession("ADMIN")
-  const [configRes, overviewRes, membershipRes] = await Promise.all([
+  const [configResult, overviewResult, membershipResult] = await Promise.allSettled([
     fetchApi<{ configs: TestConfigResponse[] }>("/api/v1/admin/test-config"),
     fetchApi<{ overview: AdminOverview }>("/api/v1/admin/overview"),
     fetchApi<{ plans: UpgradePlan[] }>("/api/v1/admin/membership-plans"),
   ])
+
+  if (configResult.status === "rejected") {
+    throw configResult.reason
+  }
+  if (overviewResult.status === "rejected") {
+    throw overviewResult.reason
+  }
+
+  const configRes = configResult.value
+  const overviewRes = overviewResult.value
+  const membershipPlans = membershipResult.status === "fulfilled" ? membershipResult.value.plans ?? [] : []
+  const membershipError =
+    membershipResult.status === "rejected"
+      ? "Harga upgrade belum bisa dimuat. Pastikan backend sudah update dan migration membership_plans sudah berjalan."
+      : ""
 
   const configs = configRes.configs ?? []
   const iqConfig = configs.find((item) => item.testType === "IQ") ?? null
@@ -98,7 +113,13 @@ export default async function AdminSettingsPage() {
         </section>
       ) : null}
 
-      <MembershipPlanForm plans={membershipRes.plans ?? []} />
+      {membershipError ? (
+        <div className="rounded-[24px] border border-amber-200 bg-amber-50 px-5 py-4 text-sm leading-7 text-amber-900">
+          {membershipError}
+        </div>
+      ) : null}
+
+      <MembershipPlanForm plans={membershipPlans} />
 
       <div className="grid gap-6 xl:grid-cols-2">
         <TestConfigForm

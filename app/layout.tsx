@@ -39,6 +39,9 @@ export const metadata: Metadata = {
   alternates: {
     canonical: "/",
   },
+  icons: {
+    icon: "/icon.svg",
+  },
   openGraph: {
     title: "TO Try Out KDMP KNMP | Koperasi Desa Merah Putih",
     description:

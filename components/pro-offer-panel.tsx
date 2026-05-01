@@ -1,4 +1,4 @@
-import { BadgeCheck, BookMarked, Layers3, ShieldCheck } from "lucide-react"
+import { BadgeCheck, BookMarked, BookOpen, Layers3, ShieldCheck } from "lucide-react"
 
 interface ProOfferPanelProps {
   compact?: boolean
@@ -34,7 +34,8 @@ export function ProOfferPanel({ compact = false }: ProOfferPanelProps) {
       <div className="absolute -bottom-20 left-6 size-56 rounded-full bg-amber-200/40 blur-3xl" />
 
       <div className="relative">
-        <div className="inline-flex rounded-full border border-teal-200 bg-teal-50 px-4 py-2 text-xs font-black uppercase tracking-[0.26em] text-teal-700">
+        <div className="inline-flex items-center gap-2 rounded-full border border-teal-200 bg-teal-50 px-4 py-2 text-xs font-black uppercase tracking-[0.26em] text-teal-700">
+          <BookOpen className="size-4" aria-hidden="true" />
           TO Try Out KDMP KNMP
         </div>
         <h1 className={`${compact ? "text-3xl md:text-4xl" : "text-4xl md:text-6xl"} mt-6 max-w-2xl font-black tracking-[-0.045em] text-slate-950`}>
