@@ -173,7 +173,7 @@ export function QuestionImportDialog() {
 
   return (
     <>
-      <Button type="button" variant="outline" className="h-11 rounded-2xl px-5" onClick={() => setOpen(true)}>
+      <Button type="button" className="h-11 rounded-2xl px-5" onClick={() => setOpen(true)}>
         Import Excel
       </Button>
 

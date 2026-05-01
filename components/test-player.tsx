@@ -14,6 +14,7 @@ import type {
 import { LogoutButton } from "@/components/logout-button"
 import { Button } from "@/components/ui/button"
 import { browserApiUrl } from "@/lib/browser-api"
+import { questionMediaSrc } from "@/lib/question-media"
 
 type AnswerMap = Record<number, string>
 type DirtyAnswerMap = Record<number, string>
@@ -142,6 +143,7 @@ export function TestPlayer({ attempt }: TestPlayerProps) {
   const activeSectionOrder = activeSection ? getSectionOrder(sections, activeSection.code) : -1
   const isLastSection =
     activeSectionOrder >= 0 && activeSectionOrder === sections.length - 1
+  const currentPromptMediaSrc = questionMediaSrc(currentQuestion?.promptMediaUrl)
 
   const syncAttemptState = useCallback((detail: AttemptDetail) => {
     const nextAnswers = getInitialAnswers(detail)
@@ -655,10 +657,10 @@ export function TestPlayer({ attempt }: TestPlayerProps) {
 
                 <p className="mt-4 text-lg leading-8 text-slate-900">{currentQuestion.prompt}</p>
 
-                {currentQuestion.promptMediaUrl ? (
+                {currentPromptMediaSrc ? (
                   <div className="mt-4 overflow-hidden rounded-[24px] border border-slate-200 bg-white p-4">
                     <Image
-                      src={currentQuestion.promptMediaUrl}
+                      src={currentPromptMediaSrc}
                       alt={currentQuestion.promptMediaAlt || currentQuestion.prompt}
                       width={960}
                       height={640}
@@ -672,6 +674,7 @@ export function TestPlayer({ attempt }: TestPlayerProps) {
               <div className="mt-6 grid gap-3">
                 {currentQuestion.options.map((option) => {
                   const active = answers[currentQuestion.id] === option.key
+                  const optionMediaSrc = questionMediaSrc(option.mediaUrl)
 
                   return (
                     <button
@@ -694,10 +697,10 @@ export function TestPlayer({ attempt }: TestPlayerProps) {
                         {option.key}
                       </span>
                       <span className="flex-1 space-y-3">
-                        {option.mediaUrl ? (
+                        {optionMediaSrc ? (
                           <span className="block overflow-hidden rounded-[20px] border border-slate-200 bg-slate-50 p-3">
                             <Image
-                              src={option.mediaUrl}
+                              src={optionMediaSrc}
                               alt={option.mediaAlt || option.content || `Pilihan ${option.key}`}
                               width={640}
                               height={360}

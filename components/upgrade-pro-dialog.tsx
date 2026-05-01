@@ -33,8 +33,8 @@ const upgradePlans: UpgradePlanCard[] = [
     headline: "Semua fitur terbuka dengan batas latihan harian",
     description: "Cocok untuk peserta yang ingin akses penuh IQ dan SKB, tetapi tetap dengan kontrol pemakaian harian.",
     points: [
-      "Akses penuh Test IQ 120 soal per sesi",
-      "Akses semua jabatan SKB 30 soal per sesi",
+      "Akses penuh Test IQ sesuai setting admin",
+      "Akses SKB sesuai jabatan dan setting admin",
       "Maksimal 10 submit IQ per hari",
       "Maksimal 10 submit SKB per hari",
       "Maksimal 3 browser/perangkat per akun",
@@ -47,8 +47,8 @@ const upgradePlans: UpgradePlanCard[] = [
     headline: "Full akses tanpa batas submit harian",
     description: "Cocok untuk peserta yang ingin belajar intens tanpa dibatasi jumlah submit IQ atau SKB setiap hari.",
     points: [
-      "Akses penuh Test IQ 120 soal per sesi",
-      "Akses semua jabatan SKB 30 soal per sesi",
+      "Akses penuh Test IQ sesuai setting admin",
+      "Akses SKB sesuai jabatan dan setting admin",
       "Submit IQ tanpa batas harian",
       "Submit SKB tanpa batas harian",
       "Maksimal 3 browser/perangkat per akun",

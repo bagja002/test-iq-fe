@@ -9,6 +9,7 @@ import { LogoutButton } from "@/components/logout-button"
 import { QuestionAdminForm } from "@/components/question-admin-form"
 import { QuestionAssetImportDialog } from "@/components/question-asset-import-dialog"
 import { QuestionImportDialog } from "@/components/question-import-dialog"
+import { questionMediaSrc } from "@/lib/question-media"
 import { fetchApi } from "@/lib/server-api"
 import { requireSession } from "@/lib/session"
 import { readSearchParam } from "@/lib/search-params"
@@ -127,35 +128,80 @@ export default async function AdminQuestionsPage({ searchParams }: AdminQuestion
         </div>
         <div className="divide-y divide-slate-200">
           {questionRes.questions.length > 0 ? (
-            questionRes.questions.map((question) => (
-              <div key={question.id} className="grid gap-4 px-6 py-5 lg:grid-cols-[1fr_auto] lg:items-center">
-                <div className="space-y-3">
-                  {question.promptMediaUrl ? (
-                    <div className="overflow-hidden rounded-[20px] border border-slate-200 bg-slate-50 p-3">
-                      <Image
-                        src={question.promptMediaUrl}
-                        alt={question.promptMediaAlt ?? question.prompt}
-                        width={960}
-                        height={540}
-                        unoptimized
-                        className="max-h-44 w-full rounded-2xl object-contain"
-                      />
+            questionRes.questions.map((question) => {
+              const promptMediaSrc = questionMediaSrc(question.promptMediaUrl)
+              const options = question.options ?? []
+
+              return (
+                <div key={question.id} className="grid gap-4 px-6 py-5 lg:grid-cols-[1fr_auto] lg:items-center">
+                  <div className="space-y-4">
+                    {promptMediaSrc ? (
+                      <div className="overflow-hidden rounded-[20px] border border-slate-200 bg-slate-50 p-3">
+                        <Image
+                          src={promptMediaSrc}
+                          alt={question.promptMediaAlt ?? question.prompt}
+                          width={960}
+                          height={540}
+                          unoptimized
+                          className="max-h-44 w-full rounded-2xl object-contain"
+                        />
+                      </div>
+                    ) : null}
+                    <div className="text-base font-medium text-slate-950">{question.prompt}</div>
+                    {options.length > 0 ? (
+                      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                        {options.map((option) => {
+                          const optionMediaSrc = questionMediaSrc(option.mediaUrl)
+
+                          return (
+                            <div
+                              key={option.key}
+                              className="rounded-[20px] border border-slate-200 bg-white p-3"
+                            >
+                              <div className="mb-2 flex items-center justify-between gap-2">
+                                <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
+                                  Opsi {option.key}
+                                </span>
+                                {option.isCorrect ? (
+                                  <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
+                                    Benar
+                                  </span>
+                                ) : null}
+                              </div>
+                              {optionMediaSrc ? (
+                                <Image
+                                  src={optionMediaSrc}
+                                  alt={option.mediaAlt ?? option.content ?? `Opsi ${option.key}`}
+                                  width={480}
+                                  height={280}
+                                  unoptimized
+                                  className="max-h-32 w-full rounded-2xl bg-slate-50 object-contain"
+                                />
+                              ) : null}
+                              {option.content ? (
+                                <p className="mt-2 line-clamp-3 text-sm leading-6 text-slate-700">
+                                  {option.content}
+                                </p>
+                              ) : null}
+                            </div>
+                          )
+                        })}
+                      </div>
+                    ) : null}
+                    <div className="mt-2 flex flex-wrap gap-3 text-xs uppercase tracking-[0.25em] text-slate-500">
+                      {question.questionIndexLabel ? <span>{question.questionIndexLabel}</span> : null}
+                      {question.subtestLabel ? <span>{question.subtestLabel}</span> : null}
+                      {question.promptMediaUrl ? <span>Prompt Visual</span> : null}
+                      {question.hasOptionMedia ? <span>Opsi Visual</span> : null}
+                      <span>{question.difficulty}</span>
+                      <span>{question.status}</span>
+                      <span>{question.optionCount} opsi</span>
                     </div>
-                  ) : null}
-                  <div className="text-base font-medium text-slate-950">{question.prompt}</div>
-                  <div className="mt-2 flex flex-wrap gap-3 text-xs uppercase tracking-[0.25em] text-slate-500">
-                    {question.questionIndexLabel ? <span>{question.questionIndexLabel}</span> : null}
-                    {question.subtestLabel ? <span>{question.subtestLabel}</span> : null}
-                    {question.promptMediaUrl ? <span>Prompt Visual</span> : null}
-                    {question.hasOptionMedia ? <span>Opsi Visual</span> : null}
-                    <span>{question.difficulty}</span>
-                    <span>{question.status}</span>
-                    <span>{question.optionCount} opsi</span>
                   </div>
+                  <ArchiveQuestionButton questionId={question.id} />
                 </div>
-                <ArchiveQuestionButton questionId={question.id} />
-              </div>
-            ))
+              )
+            })
           ) : (
             <div className="px-6 py-10 text-sm text-slate-600">
               Tidak ada soal yang cocok dengan filter saat ini.

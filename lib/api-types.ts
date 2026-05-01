@@ -82,6 +82,14 @@ export interface QuestionAssetImportResult {
   errors: string[]
 }
 
+export interface QuestionSummaryOption {
+  key: string
+  content: string
+  mediaUrl: string | null
+  mediaAlt: string | null
+  isCorrect: boolean
+}
+
 export interface QuestionSummary {
   id: number
   prompt: string
@@ -95,6 +103,7 @@ export interface QuestionSummary {
   status: QuestionStatus
   hasOptionMedia: boolean
   optionCount: number
+  options: QuestionSummaryOption[]
   updatedAt: string
 }
 
@@ -106,8 +115,17 @@ export interface TestConfigResponse {
   roomLabel: string | null
   durationMinutes: number
   questionCount: number
+  sections: TestSectionConfigResponse[]
   isActive: boolean
   updatedAt: string
+}
+
+export interface TestSectionConfigResponse {
+  questionIndex: QuestionIndex
+  label: string
+  orderNo: number
+  durationMinutes: number
+  questionCount: number
 }
 
 export interface AdminQuestionStats {
@@ -157,6 +175,7 @@ export interface AdminConfigHealth {
   canStartAttempt: boolean
   readinessMessage: string
   questionHealth: AdminQuestionHealth[]
+  sections: TestSectionConfigResponse[]
 }
 
 export interface AdminOverview {

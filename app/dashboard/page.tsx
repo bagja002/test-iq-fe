@@ -11,7 +11,7 @@ import { getAccountBadgeLabel, hasPaidAccess } from "@/lib/account-types"
 import { getSKBRoomCodeForPosition } from "@/lib/positions"
 import { fetchApi } from "@/lib/server-api"
 import { requireSession } from "@/lib/session"
-import { IQ_TOTAL_QUESTION_COUNT, SKB_QUESTION_COUNT_PER_JABATAN, FREE_IQ_QUESTION_LIMIT } from "@/lib/test-rules"
+import { getRuntimeQuestionCount } from "@/lib/test-rules"
 
 export default async function DashboardPage() {
   const user = await requireSession()
@@ -29,9 +29,10 @@ export default async function DashboardPage() {
   ])
 
   const iqConfig = iqConfigRes.config
-  const iqQuestionCount = isPaidAccount ? IQ_TOTAL_QUESTION_COUNT : FREE_IQ_QUESTION_LIMIT
   const skbConfigCount = (allConfigRes.configs ?? []).filter((item) => item.testType === "SKB").length
   const skbRoomCode = getSKBRoomCodeForPosition(user.position)
+  const skbConfig = (allConfigRes.configs ?? []).find((item) => item.testType === "SKB" && item.roomCode === skbRoomCode) ?? null
+  const iqQuestionCount = getRuntimeQuestionCount("IQ", isPaidAccount, iqConfig)
   const hasMappedSKBRoom = Boolean(skbRoomCode)
   const skbHref = isPaidAccount && hasMappedSKBRoom ? "/test/start?testType=SKB" : "/dashboard"
   const accountLabel = getAccountBadgeLabel(user.accountType)
@@ -177,7 +178,7 @@ export default async function DashboardPage() {
             </div>
             <div className="rounded-2xl bg-slate-50 p-4 md:p-5">
               <div className="text-sm text-slate-500">Jumlah soal</div>
-              <div className="mt-2 text-xl font-semibold text-slate-950">{SKB_QUESTION_COUNT_PER_JABATAN} soal per jabatan</div>
+              <div className="mt-2 text-xl font-semibold text-slate-950">{skbConfig?.questionCount ?? 50} soal per jabatan</div>
               <p className="mt-2 text-xs leading-6 text-slate-500">
                 {isPaidAccount
                   ? hasMappedSKBRoom

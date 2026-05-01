@@ -9,7 +9,7 @@ import { hasPaidAccess } from "@/lib/account-types"
 import { getSKBRoomCodeForPosition } from "@/lib/positions"
 import { fetchApi } from "@/lib/server-api"
 import { requireSession } from "@/lib/session"
-import { getRuntimeQuestionCount, IQ_QUESTIONS_PER_SECTION } from "@/lib/test-rules"
+import { getIQSectionSummary, getRuntimeQuestionCount } from "@/lib/test-rules"
 
 interface TestStartPageProps {
   searchParams: Promise<Record<string, string | string[] | undefined>>
@@ -145,7 +145,8 @@ export default async function TestStartPage({ searchParams }: TestStartPageProps
 
   const config = configRes.config
   const roomName = config?.roomLabel ?? "Kamar SKB"
-  const displayedQuestionCount = getRuntimeQuestionCount(testType, isPaidAccount)
+  const displayedQuestionCount = getRuntimeQuestionCount(testType, isPaidAccount, config)
+  const iqSectionSummary = getIQSectionSummary(config)
 
   const instructions = isSKB
     ? [
@@ -157,7 +158,7 @@ export default async function TestStartPage({ searchParams }: TestStartPageProps
     : [
         !isPaidAccount
           ? "Akun gratis hanya membuka preview Test IQ sebanyak 2 soal."
-          : `Setelah test dimulai, Anda akan melihat 4 bagian besar: VCI, PRI, WMI, dan PSI, masing-masing ${IQ_QUESTIONS_PER_SECTION} soal.`,
+          : `Setelah test dimulai, komposisi IQ mengikuti setting admin: ${iqSectionSummary}.`,
         !isPaidAccount
           ? "Kedua soal preview tetap mengikuti alur bagian yang aktif, lalu hasil bisa langsung dilihat setelah submit."
           : "Setiap bagian dikerjakan satu per satu. Anda harus menekan mulai pada bagian yang aktif sebelum soal tampil.",

@@ -6,7 +6,6 @@ import { LogoutButton } from "@/components/logout-button"
 import { TestConfigForm } from "@/components/test-config-form"
 import { fetchApi } from "@/lib/server-api"
 import { requireSession } from "@/lib/session"
-import { IQ_TOTAL_QUESTION_COUNT, SKB_QUESTION_COUNT_PER_JABATAN } from "@/lib/test-rules"
 
 export default async function AdminSettingsPage() {
   await requireSession("ADMIN")
@@ -75,10 +74,22 @@ export default async function AdminSettingsPage() {
                   <div className="rounded-[20px] bg-slate-50 p-4">
                     <div className="text-sm text-slate-500">Soal</div>
                     <div className="mt-2 text-2xl font-semibold text-slate-950">
-                      {config.testType === "IQ" ? IQ_TOTAL_QUESTION_COUNT : SKB_QUESTION_COUNT_PER_JABATAN}
+                      {config.questionCount}
                     </div>
                   </div>
                 </div>
+                {config.sections?.length ? (
+                  <div className="mt-4 grid gap-2">
+                    {config.sections.map((section) => (
+                      <div key={section.questionIndex} className="flex items-center justify-between rounded-2xl bg-slate-50 px-4 py-3 text-sm">
+                        <span className="font-medium text-slate-700">{section.questionIndex}</span>
+                        <span className="text-slate-500">
+                          {section.questionCount} soal / {section.durationMinutes} menit
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                ) : null}
               </article>
             ))}
           </div>
@@ -90,7 +101,7 @@ export default async function AdminSettingsPage() {
           config={iqConfig}
           testType="IQ"
           title="Konfigurasi IQ"
-          description="Ubah judul dan durasi untuk test IQ utama. Jumlah soal runtime dikunci 120 soal, yaitu 30 soal per bagian."
+          description="Atur jumlah soal dan waktu untuk tiap bagian IQ. Default baru: VCI 50/40 menit, WMI 40/30 menit, PSI 20/15 menit, PRI 20/15 menit."
         />
         {[
           { code: "MANAJER_KOPERASI_KDMP", label: "Manajer Kopreasi (KDMP)" },
@@ -106,7 +117,7 @@ export default async function AdminSettingsPage() {
             roomCode={room.code}
             roomLabel={room.label}
             title={`Kamar SKB ${room.label}`}
-            description={`Atur durasi untuk kamar SKB jabatan ${room.label}. Jumlah soal runtime dikunci 30 soal per jabatan.`}
+            description={`Atur jumlah soal dan waktu untuk kamar SKB jabatan ${room.label}. Default baru: 50 soal dengan waktu 60 menit.`}
           />
         ))}
       </div>
