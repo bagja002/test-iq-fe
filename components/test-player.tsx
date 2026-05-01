@@ -1,6 +1,5 @@
 "use client"
 
-import Image from "next/image"
 import { useCallback, useEffect, useRef, useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
 
@@ -12,6 +11,7 @@ import type {
 } from "@/lib/api-types"
 
 import { LogoutButton } from "@/components/logout-button"
+import { ClickableQuestionImage } from "@/components/clickable-question-image"
 import { Button } from "@/components/ui/button"
 import { browserApiUrl } from "@/lib/browser-api"
 import { questionMediaSrc } from "@/lib/question-media"
@@ -659,13 +659,13 @@ export function TestPlayer({ attempt }: TestPlayerProps) {
 
                 {currentPromptMediaSrc ? (
                   <div className="mt-4 overflow-hidden rounded-[24px] border border-slate-200 bg-white p-4">
-                    <Image
+                    <ClickableQuestionImage
                       src={currentPromptMediaSrc}
                       alt={currentQuestion.promptMediaAlt || currentQuestion.prompt}
+                      title={`Gambar soal ${currentQuestionIndex + 1}`}
                       width={960}
                       height={640}
-                      unoptimized
-                      className="max-h-[360px] w-full rounded-2xl object-contain"
+                      imageClassName="max-h-[360px] w-full rounded-2xl object-contain"
                     />
                   </div>
                 ) : null}
@@ -699,13 +699,13 @@ export function TestPlayer({ attempt }: TestPlayerProps) {
                       <span className="flex-1 space-y-3">
                         {optionMediaSrc ? (
                           <span className="block overflow-hidden rounded-[20px] border border-slate-200 bg-slate-50 p-3">
-                            <Image
+                            <ClickableQuestionImage
                               src={optionMediaSrc}
                               alt={option.mediaAlt || option.content || `Pilihan ${option.key}`}
+                              title={`Gambar pilihan ${option.key}`}
                               width={640}
                               height={360}
-                              unoptimized
-                              className="max-h-48 w-full rounded-2xl object-contain"
+                              imageClassName="max-h-48 w-full rounded-2xl object-contain"
                             />
                           </span>
                         ) : null}

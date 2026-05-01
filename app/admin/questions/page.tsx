@@ -1,10 +1,9 @@
-import Image from "next/image"
-
 import type { AdminOverview, QuestionSummary } from "@/lib/api-types"
 
 import { AdminNav } from "@/components/admin-nav"
 import { AdminStatCard } from "@/components/admin-stat-card"
 import { ArchiveQuestionButton } from "@/components/archive-question-button"
+import { ClickableQuestionImage } from "@/components/clickable-question-image"
 import { LogoutButton } from "@/components/logout-button"
 import { QuestionAdminForm } from "@/components/question-admin-form"
 import { QuestionAssetImportDialog } from "@/components/question-asset-import-dialog"
@@ -137,13 +136,13 @@ export default async function AdminQuestionsPage({ searchParams }: AdminQuestion
                   <div className="space-y-4">
                     {promptMediaSrc ? (
                       <div className="overflow-hidden rounded-[20px] border border-slate-200 bg-slate-50 p-3">
-                        <Image
+                        <ClickableQuestionImage
                           src={promptMediaSrc}
                           alt={question.promptMediaAlt ?? question.prompt}
+                          title={`Gambar soal #${question.id}`}
                           width={960}
                           height={540}
-                          unoptimized
-                          className="max-h-44 w-full rounded-2xl object-contain"
+                          imageClassName="max-h-44 w-full rounded-2xl object-contain"
                         />
                       </div>
                     ) : null}
@@ -169,13 +168,13 @@ export default async function AdminQuestionsPage({ searchParams }: AdminQuestion
                                 ) : null}
                               </div>
                               {optionMediaSrc ? (
-                                <Image
+                                <ClickableQuestionImage
                                   src={optionMediaSrc}
                                   alt={option.mediaAlt ?? option.content ?? `Opsi ${option.key}`}
+                                  title={`Gambar opsi ${option.key} soal #${question.id}`}
                                   width={480}
                                   height={280}
-                                  unoptimized
-                                  className="max-h-32 w-full rounded-2xl bg-slate-50 object-contain"
+                                  imageClassName="max-h-32 w-full rounded-2xl bg-slate-50 object-contain"
                                 />
                               ) : null}
                               {option.content ? (
