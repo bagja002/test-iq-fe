@@ -38,6 +38,7 @@ export function MembershipPlanForm({ plans }: MembershipPlanFormProps) {
     () =>
       editablePlans.map((item) => {
         const saved = plans.find((plan) => plan.accountType === item.accountType)
+
         return {
           ...item,
           name: saved?.name ?? item.fallbackName,
@@ -112,8 +113,7 @@ export function MembershipPlanForm({ plans }: MembershipPlanFormProps) {
               <input
                 name={`amount_${plan.accountType}`}
                 type="number"
-                min={1}
-                step={1000}
+                step={1}
                 defaultValue={plan.amount}
                 className="form-control"
               />
