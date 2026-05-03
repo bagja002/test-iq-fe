@@ -21,6 +21,7 @@ export function UserAdminForm() {
     const payload = {
       name: String(formData.get("name") ?? ""),
       position: String(formData.get("position") ?? ""),
+      phone: String(formData.get("phone") ?? ""),
       email: String(formData.get("email") ?? ""),
       password: String(formData.get("password") ?? ""),
       role: String(formData.get("role") ?? "USER"),
@@ -101,12 +102,19 @@ export function UserAdminForm() {
               ))}
             </select>
           </div>
-          <div className="grid gap-3 md:grid-cols-1">
+          <div className="grid gap-3 md:grid-cols-2">
             <input
               name="email"
               type="email"
               required
               placeholder="email@domain.com"
+              className="form-control"
+            />
+            <input
+              name="phone"
+              type="tel"
+              required
+              placeholder="Nomor HP"
               className="form-control"
             />
           </div>

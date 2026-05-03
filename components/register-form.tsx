@@ -19,6 +19,7 @@ export function RegisterForm() {
   function handleSubmit(formData: FormData) {
     const name = String(formData.get("name") ?? "")
     const position = String(formData.get("position") ?? "")
+    const phone = String(formData.get("phone") ?? "")
     const email = String(formData.get("email") ?? "")
     const password = String(formData.get("password") ?? "")
     const confirmPassword = String(formData.get("confirmPassword") ?? "")
@@ -38,7 +39,7 @@ export function RegisterForm() {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ name, position, email, password }),
+          body: JSON.stringify({ name, position, phone, email, password }),
         })
 
         const data = await response.json()
@@ -82,6 +83,21 @@ export function RegisterForm() {
           autoComplete="email"
           inputMode="email"
           placeholder="nama@email.com"
+          className="form-control"
+        />
+      </div>
+      <div className="space-y-2">
+        <label className="text-sm font-medium text-slate-700" htmlFor="phone">
+          Nomor HP
+        </label>
+        <input
+          id="phone"
+          name="phone"
+          type="tel"
+          required
+          autoComplete="tel"
+          inputMode="tel"
+          placeholder="08xxxxxxxxxx"
           className="form-control"
         />
       </div>

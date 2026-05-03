@@ -56,7 +56,7 @@ export default async function AdminUsersPage({ searchParams }: AdminUsersPagePro
           <input
             name="q"
             defaultValue={q}
-            placeholder="Cari nama atau email..."
+            placeholder="Cari nama, email, atau nomor HP..."
             className="form-control"
           />
           <select name="role" defaultValue={role} className="form-select">
@@ -92,6 +92,7 @@ export default async function AdminUsersPage({ searchParams }: AdminUsersPagePro
                   <div className="text-base font-medium text-slate-950">{user.name}</div>
                   <div className="mt-2 text-sm text-slate-600">{user.position}</div>
                   <div className="mt-2 text-sm text-slate-600">{user.email}</div>
+                  <div className="mt-2 text-sm text-slate-600">{user.phone}</div>
                   <div className="mt-2 text-xs uppercase tracking-[0.2em] text-slate-500">
                     Akun {user.accountType}
                   </div>
