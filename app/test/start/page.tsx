@@ -157,17 +157,17 @@ export default async function TestStartPage({ searchParams }: TestStartPageProps
       ]
     : [
         !isPaidAccount
-          ? "Akun gratis hanya membuka preview Test IQ sebanyak 2 soal."
+          ? `Akun gratis membuka full Test IQ satu kali dengan komposisi: ${iqSectionSummary}.`
           : `Setelah test dimulai, komposisi IQ mengikuti setting admin: ${iqSectionSummary}.`,
         !isPaidAccount
-          ? "Kedua soal preview tetap mengikuti alur bagian yang aktif, lalu hasil bisa langsung dilihat setelah submit."
+          ? "Setiap bagian dikerjakan satu per satu. Setelah full test ini selesai, akun gratis tidak bisa memulai IQ baru."
           : "Setiap bagian dikerjakan satu per satu. Anda harus menekan mulai pada bagian yang aktif sebelum soal tampil.",
         !isPaidAccount
-          ? "Upgrade akun akan membuka seluruh paket soal IQ dan akses ke SKB."
+          ? "Upgrade akun akan membuka akses SKB dan batas latihan tambahan."
           : "Bagian berikutnya tetap terkunci sampai bagian yang sedang aktif disubmit atau waktunya habis.",
         "Setiap bagian memiliki timer sendiri, dan jawaban akan tersimpan otomatis saat Anda memilih opsi atau pindah soal.",
         !isPaidAccount
-          ? "Tombol submit tetap muncul di soal terakhir preview."
+          ? "Tombol submit final baru muncul setelah keempat bagian selesai dikerjakan."
           : "Tombol submit final baru muncul setelah keempat bagian selesai dikerjakan.",
       ]
 

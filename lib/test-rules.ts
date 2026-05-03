@@ -1,6 +1,5 @@
 import type { TestConfigResponse, TestType } from "@/lib/api-types"
 
-export const FREE_IQ_QUESTION_LIMIT = 2
 export const DEFAULT_IQ_TOTAL_QUESTION_COUNT = 130
 export const DEFAULT_SKB_QUESTION_COUNT_PER_JABATAN = 50
 
@@ -10,7 +9,7 @@ export function getRuntimeQuestionCount(
   config?: TestConfigResponse | null,
 ): number {
   if (testType === "IQ") {
-    return isPaidAccount ? (config?.questionCount ?? DEFAULT_IQ_TOTAL_QUESTION_COUNT) : FREE_IQ_QUESTION_LIMIT
+    return config?.questionCount ?? DEFAULT_IQ_TOTAL_QUESTION_COUNT
   }
 
   return config?.questionCount ?? DEFAULT_SKB_QUESTION_COUNT_PER_JABATAN

@@ -116,7 +116,7 @@ export default async function DashboardPage() {
           <p className="mt-3 text-sm leading-7 text-slate-600">
             {isPaidAccount
               ? "Kerjakan 4 bagian IQ dengan soal acak dari bank soal. Hasil akan tampil setelah test selesai."
-              : "Akun gratis bisa mencoba preview 2 soal. Upgrade membuka test IQ penuh."}
+              : "Akun gratis bisa mengerjakan full test IQ satu kali. Upgrade membuka akses SKB dan batas latihan tambahan."}
           </p>
 
           <div className="mt-6 grid gap-3 sm:grid-cols-3">
@@ -135,18 +135,24 @@ export default async function DashboardPage() {
             <div className="rounded-2xl bg-slate-50 p-4 md:p-5">
               <div className="text-sm text-slate-500">Status</div>
               <div className="mt-2 text-lg font-semibold text-slate-950">
-                {iqAttemptRes.attempt ? "Sedang berjalan" : "Belum mulai"}
+                {iqAttemptRes.attempt ? "Sedang berjalan" : iqResultRes.attempt ? "Sudah dipakai" : "Belum mulai"}
               </div>
             </div>
           </div>
 
           <div className="mt-6 grid gap-3 sm:flex sm:flex-wrap sm:items-center">
-            <StartTestButton
-              currentAttemptId={iqAttemptRes.attempt?.id}
-              testType="IQ"
-              label="Mulai IQ"
-              className="px-5"
-            />
+            {!isPaidAccount && iqResultRes.attempt && !iqAttemptRes.attempt ? (
+              <div className="inline-flex h-12 w-full items-center justify-center rounded-2xl bg-slate-100 px-5 text-sm font-medium text-slate-500 sm:w-auto">
+                Jatah IQ gratis sudah dipakai
+              </div>
+            ) : (
+              <StartTestButton
+                currentAttemptId={iqAttemptRes.attempt?.id}
+                testType="IQ"
+                label="Mulai IQ"
+                className="px-5"
+              />
+            )}
             <Link
               href="/result?testType=IQ"
               className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-2xl border border-slate-200 px-5 text-sm font-medium text-slate-700 transition hover:border-slate-300 sm:w-auto"
