@@ -1,3 +1,5 @@
+import Link from "next/link"
+
 import type { AdminOverview, UserSummary } from "@/lib/api-types"
 
 import { AdminNav } from "@/components/admin-nav"
@@ -13,6 +15,20 @@ interface AdminUsersPageProps {
   searchParams: Promise<Record<string, string | string[] | undefined>>
 }
 
+const usersPerPage = 10
+
+function readPage(value: string | string[] | undefined): number {
+  const rawValue = Array.isArray(value) ? value[0] : value
+  const page = Number(rawValue ?? "1")
+  return Number.isFinite(page) && page > 0 ? Math.floor(page) : 1
+}
+
+function buildUsersPageHref(params: URLSearchParams, page: number): string {
+  const nextParams = new URLSearchParams(params)
+  nextParams.set("page", String(page))
+  return `/admin/users?${nextParams.toString()}`
+}
+
 export default async function AdminUsersPage({ searchParams }: AdminUsersPageProps) {
   await requireSession("ADMIN")
 
@@ -20,10 +36,13 @@ export default async function AdminUsersPage({ searchParams }: AdminUsersPagePro
   const q = readSearchParam(params.q)
   const role = readSearchParam(params.role)
   const status = readSearchParam(params.status)
+  const page = readPage(params.page)
   const query = new URLSearchParams()
   if (q) query.set("q", q)
   if (role) query.set("role", role)
   if (status) query.set("status", status)
+  query.set("page", String(page))
+  query.set("limit", String(usersPerPage + 1))
 
   const [userRes, overviewRes] = await Promise.all([
     fetchApi<{ users: UserSummary[] }>(`/api/v1/admin/users${query.toString() ? `?${query.toString()}` : ""}`),
@@ -31,6 +50,12 @@ export default async function AdminUsersPage({ searchParams }: AdminUsersPagePro
   ])
 
   const overview = overviewRes.overview
+  const users = (userRes.users ?? []).slice(0, usersPerPage)
+  const hasNextPage = (userRes.users ?? []).length > usersPerPage
+  const pageQuery = new URLSearchParams()
+  if (q) pageQuery.set("q", q)
+  if (role) pageQuery.set("role", role)
+  if (status) pageQuery.set("status", status)
 
   return (
     <main className="page-shell space-y-6">
@@ -78,40 +103,100 @@ export default async function AdminUsersPage({ searchParams }: AdminUsersPagePro
       <UserAdminForm />
 
       <section className="glass-panel overflow-hidden">
-        <div className="border-b border-slate-200 px-6 py-5">
-          <h2 className="text-lg font-semibold text-slate-950">Daftar user</h2>
-          <p className="mt-2 text-sm text-slate-600">
-            Filter ini membantu admin saat jumlah peserta mulai besar dan perlu cepat menemukan akun tertentu.
-          </p>
+        <div className="flex flex-col gap-3 border-b border-slate-200 px-6 py-5 md:flex-row md:items-center md:justify-between">
+          <div>
+            <h2 className="text-lg font-semibold text-slate-950">Daftar user</h2>
+            <p className="mt-2 text-sm text-slate-600">
+              Filter ini membantu admin saat jumlah peserta mulai besar dan perlu cepat menemukan akun tertentu.
+            </p>
+          </div>
+          <div className="text-sm font-medium text-slate-500">Halaman {page}</div>
         </div>
-        <div className="divide-y divide-slate-200">
-          {userRes.users.length > 0 ? (
-            userRes.users.map((user) => (
-              <div key={user.id} className="grid gap-4 px-6 py-5 lg:grid-cols-[1fr_auto] lg:items-center">
-                <div>
-                  <div className="text-base font-medium text-slate-950">{user.name}</div>
-                  <div className="mt-2 text-sm text-slate-600">{user.position}</div>
-                  <div className="mt-2 text-sm text-slate-600">{user.email}</div>
-                  <div className="mt-2 text-sm text-slate-600">{user.phone}</div>
-                  <div className="mt-2 text-xs uppercase tracking-[0.2em] text-slate-500">
-                    Akun {user.accountType}
-                  </div>
-                </div>
-                <UserStatusForm
-                  id={user.id}
-                  name={user.name}
-                  position={user.position}
-                  role={user.role}
-                  status={user.status}
-                  accountType={user.accountType}
-                />
-              </div>
-            ))
+        <div className="overflow-x-auto">
+          {users.length > 0 ? (
+            <table className="min-w-[980px] w-full border-collapse text-left text-sm">
+              <thead className="bg-slate-50 text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+                <tr>
+                  <th className="px-6 py-4">Nama</th>
+                  <th className="px-6 py-4">Jabatan</th>
+                  <th className="px-6 py-4">Email</th>
+                  <th className="px-6 py-4">No. HP</th>
+                  <th className="px-6 py-4">Akun</th>
+                  <th className="px-6 py-4">Dibuat</th>
+                  <th className="px-6 py-4 text-right">Aksi</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-200">
+                {users.map((user) => (
+                  <tr key={user.id} className="align-middle">
+                    <td className="px-6 py-4 font-medium text-slate-950">{user.name}</td>
+                    <td className="px-6 py-4 text-slate-600">{user.position}</td>
+                    <td className="px-6 py-4 text-slate-600">{user.email}</td>
+                    <td className="px-6 py-4 text-slate-600">{user.phone || "-"}</td>
+                    <td className="px-6 py-4">
+                      <span className="inline-flex rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
+                        {user.accountType}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-slate-600">
+                      {new Date(user.createdAt).toLocaleDateString("id-ID", {
+                        day: "2-digit",
+                        month: "short",
+                        year: "numeric",
+                      })}
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex justify-end">
+                        <UserStatusForm
+                          id={user.id}
+                          name={user.name}
+                          position={user.position}
+                          role={user.role}
+                          status={user.status}
+                          accountType={user.accountType}
+                        />
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           ) : (
             <div className="px-6 py-10 text-sm text-slate-600">
               Tidak ada user yang cocok dengan filter saat ini.
             </div>
           )}
+        </div>
+        <div className="flex flex-col gap-3 border-t border-slate-200 px-6 py-5 sm:flex-row sm:items-center sm:justify-between">
+          <div className="text-sm text-slate-500">
+            Menampilkan maksimal {usersPerPage} user per halaman.
+          </div>
+          <div className="flex gap-2">
+            {page > 1 ? (
+              <Link
+                href={buildUsersPageHref(pageQuery, page - 1)}
+                className="inline-flex h-10 items-center rounded-2xl border border-slate-200 px-4 text-sm font-medium text-slate-700 transition hover:border-slate-300"
+              >
+                Previous
+              </Link>
+            ) : (
+              <span className="inline-flex h-10 items-center rounded-2xl border border-slate-100 px-4 text-sm font-medium text-slate-300">
+                Previous
+              </span>
+            )}
+            {hasNextPage ? (
+              <Link
+                href={buildUsersPageHref(pageQuery, page + 1)}
+                className="inline-flex h-10 items-center rounded-2xl bg-slate-950 px-4 text-sm font-medium text-white transition hover:bg-slate-800"
+              >
+                Next
+              </Link>
+            ) : (
+              <span className="inline-flex h-10 items-center rounded-2xl bg-slate-100 px-4 text-sm font-medium text-slate-400">
+                Next
+              </span>
+            )}
+          </div>
         </div>
       </section>
     </main>
