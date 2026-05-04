@@ -1,6 +1,6 @@
 import Link from "next/link"
 
-import type { AttemptResult, ResultListResponse, TestType } from "@/lib/api-types"
+import type { AttemptDetail, AttemptQuestion, AttemptResult, ResultListResponse, TestType } from "@/lib/api-types"
 
 import { LogoutButton } from "@/components/logout-button"
 import { fetchApi } from "@/lib/server-api"
@@ -23,6 +23,16 @@ function buildQuery(testType: TestType, roomCode?: string | null): string {
     params.set("roomCode", roomCode)
   }
   return params.toString()
+}
+
+function optionLabel(question: AttemptQuestion, optionKey: string | null): string {
+  if (!optionKey) {
+    return "-"
+  }
+
+  const option = question.options.find((item) => item.key === optionKey)
+  const content = option?.content?.trim()
+  return content ? `${optionKey}. ${content}` : optionKey
 }
 
 export default async function ResultPage({ searchParams }: ResultPageProps) {
@@ -51,6 +61,10 @@ export default async function ResultPage({ searchParams }: ResultPageProps) {
     0,
   )
   const hasRenderableResult = Boolean(attempt) || (showAllSKBFields && history.results.length > 0)
+  const attemptDetail = displayAttempt && !showAllSKBFields
+    ? await fetchApi<AttemptDetail>(`/api/v1/test-attempts/${displayAttempt.id}`).catch(() => null)
+    : null
+  const answerRows = attemptDetail?.questions ?? []
 
   return (
     <main className="page-shell space-y-6">
@@ -187,6 +201,50 @@ export default async function ResultPage({ searchParams }: ResultPageProps) {
                           <td className="px-4 py-3">{item.percentage}%</td>
                         </tr>
                       ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            ) : null}
+
+            {answerRows.length > 0 ? (
+              <div className="rounded-[28px] bg-slate-50 p-6">
+                <div className="text-sm uppercase tracking-[0.3em] text-cyan-700">
+                  Riwayat Jawaban Benar
+                </div>
+                <p className="mt-2 text-sm leading-7 text-slate-600">
+                  Jawaban benar ditampilkan setelah attempt selesai disubmit.
+                </p>
+                <div className="mt-4 overflow-x-auto">
+                  <table className="min-w-[900px] w-full text-left text-sm text-slate-700">
+                    <thead>
+                      <tr className="border-b border-slate-200 text-slate-500">
+                        <th className="px-4 py-3 font-medium">No.</th>
+                        <th className="px-4 py-3 font-medium">Index</th>
+                        <th className="px-4 py-3 font-medium">Jawaban Anda</th>
+                        <th className="px-4 py-3 font-medium">Jawaban Benar</th>
+                        <th className="px-4 py-3 font-medium">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {answerRows.map((question) => {
+                        const isCorrect = Boolean(question.correctOptionKey && question.selectedOptionKey === question.correctOptionKey)
+                        return (
+                          <tr key={question.id} className="border-b border-slate-100 align-top">
+                            <td className="px-4 py-3 font-medium text-slate-950">{question.orderNo}</td>
+                            <td className="px-4 py-3 text-slate-600">{question.questionIndexLabel ?? question.questionIndex ?? "-"}</td>
+                            <td className="px-4 py-3">{optionLabel(question, question.selectedOptionKey)}</td>
+                            <td className="px-4 py-3 font-medium text-slate-950">{optionLabel(question, question.correctOptionKey)}</td>
+                            <td className="px-4 py-3">
+                              <span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${
+                                isCorrect ? "bg-emerald-100 text-emerald-700" : "bg-rose-100 text-rose-700"
+                              }`}>
+                                {isCorrect ? "Benar" : "Salah"}
+                              </span>
+                            </td>
+                          </tr>
+                        )
+                      })}
                     </tbody>
                   </table>
                 </div>

@@ -220,6 +220,7 @@ export interface AttemptQuestion {
   promptMediaAlt: string
   options: AttemptQuestionOption[]
   selectedOptionKey: string | null
+  correctOptionKey: string | null
 }
 
 export interface AttemptSection {
